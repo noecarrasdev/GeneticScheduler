@@ -1,5 +1,5 @@
 import numpy as np
-import node
+import task
 
 def initialisation_rand(graph):
     '''
@@ -12,28 +12,28 @@ def initialisation_rand(graph):
     frontier = []
 
     # gives an image of the actual dependancies
-    node_dependancies = []
+    task_dependancies = []
     for i in range(n):
         # string pour les nombres et appels au dico ?
-        node_dependancies.append(graph[f'{i}'].Dependencies)
+        task_dependancies.append(graph[f'{i}'].Dependencies)
 
-    # gives node depending of the one searched
-    node_todepend = [[] * n]
+    # gives task depending of the one searched
+    task_todepend = [[] * n]
     for i in range(n):
-        for dep in node_dependancies[i]:
-            node_todepend[dep].append(i)
+        for dep in task_dependancies[i]:
+            task_todepend[dep].append(i)
 
     for key in graph.keys():
         if not graph[key].Dependencies:
             frontier.append(key)
 
     while len(res) < n:
-        random_node = np.random.choice(frontier, 1)
-        res.append(random_node)
-        frontier.remove(random_node)
-        for enfant in node_todepend[random_node]:
-            node_dependancies[enfant].remove(random_node)
-            if node_dependancies[enfant] == []:
+        random_task = np.random.choice(frontier, 1)
+        res.append(random_task)
+        frontier.remove(random_task)
+        for enfant in task_todepend[random_task]:
+            task_dependancies[enfant].remove(random_task)
+            if task_dependancies[enfant] == []:
                 frontier.append(enfant)
 
     return res

@@ -1,4 +1,4 @@
-class time:
+class TimeTask:
     def __init__(self, heure, minute ,seconde , ms):
         self.heure = heure
         self.minute = minute
@@ -13,7 +13,7 @@ class time:
         nminute = (self.minute + t2.minute + minuteTrop)%60
         heureTrop = (self.minute + t2.minute + minuteTrop)//60
         nheure = (self.heure + t2.heure + heureTrop)
-        return time(nheure, nminute, nseconde, nms)
+        return TimeTask(nheure, nminute, nseconde, nms)
 
     def __str__(self):
         return str(self.heure) + ":" + str(self.minute) + ":" + str(self.seconde) + ":" + str(self.ms)
@@ -41,23 +41,26 @@ def getTimeFromData(data):
     # data form is hh:mm:ss.sssssss STRING
     data = data.replace('.',':')
     list = data.split(':')
-    return time(int(list[0]), int(list[1]), int(list[2]), int(list[3][:2]))
+    return TimeTask(int(list[0]), int(list[1]), int(list[2]), int(list[3][:2]))
 
 
 def argmini(times):
-    for c,time in enumerate(times):
-        if c == 0:
-            mini = time
-            result = 0
-        else :
-            if time.isSmaller(mini):
-                mini = time
-                result = c
-    return result
+    '''
+    :param times: list of Times
+    :return: the index of the smallest time
+    '''
+    minTime = times[0]
+    minCore = 0
+
+    for i in range(len(times)):
+        if times[i].isSmaller(minTime):
+            minTime = times[i]
+            minCore = i
+    return minCore
 
 
 def maxTime(times):
-    max = time(0,0,0,0)
+    max = TimeTask(0, 0, 0, 0)
     for i in times:
         if max.isSmaller(i):
             max = i

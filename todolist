@@ -3,6 +3,7 @@ todolist for the whole project
 ________ CODE
 
 TODO : clean the code (comment, typing, etc)
+TODO : implement small tests (unit testing ?)
 TODO : use metrics to compare scores
 TODO : create visualisation algorithms for CPUs and what each modification does on 1 or 2 individuals
 TODO : fix the initialisation

@@ -1,68 +1,116 @@
 import numpy as np
 from math import ceil
-import json
 import time_personalized
-import node
+import task
+
+# TEST LAUNCH
+
+testLaunch = True
 
 
+# CODE
 
-# number of cores to use
-N = 4
-
-class ordre:
+class Ordre:
     def __init__(self, ordre):
+        '''
+        :param ordre: np.array([integers])
+        there's no test of this in this function but be careful with it !
+        '''
         self.ordre = ordre
 
-    def dependances(self, CpuOrder, tache):
-        listDep = tache.dependance
-        maxTime = time_personalized.time(0, 0, 0, 0)
+    def waitingTime(self, CpuOrder, task):
+        '''
+        :param CpuOrder: an order of tasks in the CPU
+        :param task: next Task to add
+        :return: TaskTime of the time needed to wait to place the new task
+        '''
+        listDep = task.dependance
+        maxTime = time_personalized.TaskTime(0, 0, 0, 0)
         for i in range(0, N):
+            # first task of a core
             if CpuOrder[i] == []:
-                timeAc = time_personalized.time(0, 0, 0, 0)
+                timeAc = time_personalized.TaskTime(0, 0, 0, 0)
             else:
-                node = CpuOrder[i][-1]
-                if int(node[0].ID) in listDep:
-                    timeAc = node[0].time
+                other_task = CpuOrder[i][-1]
+                # the other task is a dependency
+                if other_task[0].ID in listDep:
+                    timeAc = other_task[0].time
+                # it isn't
                 else:
-                    timeAc = time_personalized.time(0, 0, 0, 0)
+                    timeAc = time_personalized.TaskTime(0, 0, 0, 0)
             if maxTime.isSmaller(timeAc):
                 maxTime = timeAc
         return maxTime
 
-    def ordreToCPU(self):
+    def CPUScheduling(self, N):
+        '''
+        gives the order of the tasks in the CPU and the time taken to compute everything
+        :return: 2 things :
+        - total computational time (:type: TaskTime)
+        - scheduling of the tasks (:type: [N * [[task, beginTime], [task, beginTime], ...] ])
+        '''
         CpuOrder = [[] for _ in range(0, N)]
         times = [time_personalized.time(0, 0, 0, 0) for _ in range(0, N)]
-        for tache in self.ordre:
-            k = time_personalized.argmini(times)
-            beginTime = times[k].add(self.dependances(CpuOrder, tache)) 
-            CpuOrder[k].append([tache, beginTime])
-            times[k] = beginTime.add(tache.time)
-        return time_personalized.maxTime(times)
+
+        for task in self.ordre:
+            # finding the core with the smallest time
+            minCore = time_personalized.argmini(times)
+
+            # find until when to wait on this core (resolve the Dependancies)
+            beginTime = times[minCore].add(self.waitingTime(CpuOrder, task))
+
+            # updates the informations to continue with next tasks
+            CpuOrder[minCore].append([task, beginTime])
+            times[minCore] = beginTime.add(task.time)
+
+        return time_personalized.maxTime(times), CpuOrder
+
 
     def mutation(self):
+        '''
+        randomly mutates on 1 task in this Ordre
+        :return:
+        '''
         ind_inf = 0
         n = len(self.ordre)
         ind_sup = n-1
         ind_mut = np.random.randint(0, n)
-        node_mut = self.ordre[ind_mut]
+        task_mut = self.ordre[ind_mut]
         for k in range(ind_mut):
-            node = self.ordre[k]
-            if int(node.ID) in node_mut.dependance:
+            task = self.ordre[k]
+            if int(task.ID) in task_mut.dependance:
                 ind_inf = k + 1
         for k in range(n - ind_mut -1):
-            node = self.ordre[n - k - 1]
-            if int(node_mut.ID) in node.dependance:
+            task = self.ordre[n - k - 1]
+            if int(task_mut.ID) in task.dependance:
                 ind_sup = n - k - 2
         ind_new = np.random.randint(ind_inf, ind_sup + 1)
         del self.ordre[ind_mut]
-        self.ordre.insert(ind_new, node_mut)
+        self.ordre.insert(ind_new, task_mut)
+
+
+def mutation_pop(population, prob_mutation, nb_max_mutation):
+    '''
+    :param population: list of Ordre
+    :param prob_mutation: probability that each time an individual mutates
+    :param nb_max_mutation: maximum number of mutation that 1 individual can make
+    :return: void
+    updates to population in place to save space & time
+    '''
+    for k in range(len(population)):
+        for i in range(nb_max_mutation):
+            if np.random.random() < prob_mutation:
+                population[k].mutation()
 
 
 def croisement(ordre1, ordre2, bloc_taille=1):
+    # TODO : améliorer ça pour mettre plus de parents possibles
+    # TODO : utilité de blocs de taille variable ?
     '''
-    Utiliser par exemple : nouvelordre = croisement(ordre1, ordre2)
-    Attention : ordre1 et 2 doivent etre un objet, mais pas une liste
-    Notez : Il faut assurer ordre1 et ordre2 ont la meme taille
+    :param ordre1: Ordre
+    :param ordre2: Ordre
+    :param bloc_taille: size of the chunks to keep
+    :return: Ordre issued from the crossover
     '''
     assert len(ordre1.ordre) == len(ordre2.ordre)
     ordre_nouvel = []
@@ -71,55 +119,58 @@ def croisement(ordre1, ordre2, bloc_taille=1):
     for i in range(ceil(len(ordre1.ordre) / bloc_taille)):
         temp_list = ordre1.ordre[i * bloc_taille: (i + 1) * bloc_taille] + ordre2.ordre[
             i * bloc_taille: (i + 1) * bloc_taille]
-        for node_in_list in temp_list:
-            if node_in_list.ID not in ID_list:
-                ordre_nouvel.append(node_in_list)
-                ID_list.append(node_in_list.ID)
-    return ordre(ordre_nouvel)
+        for task in temp_list:
+            if task.ID not in ID_list:
+                ordre_nouvel.append(task)
+                ID_list.append(task.ID)
+    return Ordre(ordre_nouvel)
 
-def mutation_pop(population,prob_mutation, nb_mutation):
-    for k in range(len(population)):
-        if np.random.random() < prob_mutation:
-            new_ordre = list(population[k].ordre)
-            population.append(ordre( new_ordre ))
-            for k in range(nb_mutation):
-                population[-1].mutation()
 
 def croisement_pop(population, size_block):
+    # TODO : améliorer ça...
     for k in range(len(population)//2):
         ordre1 = population[2*k]
         ordre2 = population[2*k+1]
         population.append(croisement(ordre1,ordre2,size_block))
-    
+
+
 def print_ordre(ordre):
+    '''
+    :param ordre:
+    :return: void
+    print the ID order
+    '''
     for k in range(len(ordre.ordre)):
         print(ordre.ordre[k].ID)
 
-def selection(population, n):
-    # On conserve n individu de la population initial
-    classement = []
-    pop_final =  []
+
+def selection(population, n, verbose):
+    '''
+    :param population: [Ordre] to update
+    :param n: number of orders to keep
+    :param verbose: Boolean to log into the console
+    :return: the new population
+    '''
+
+    if n > len(population):
+        return 'error : you tried to select more nodes that there is in the population'
+
+    evaluation = {}
+    pop_final = []
+
     for k in range(len(population)):
-        time = population[k].ordreToCPU()
-        if len(classement)<n:
-            if(len(classement)==0):
-                classement.append([ population[k],time ])
-            else:
-                for j in range(len(classement)):
-                    if classement[j][1].isSmaller(time):
-                        classement.insert(j,[ population[k],time ])
-                        break
-                    elif(j==len(classement)-1):
-                        classement.append([ population[k],time ])
-        else:
-            for j in range(n):
-                if classement[j][1].isSmaller(time):
-                    if j==0:
-                        break
-                    else:
-                        del classement[0]
-                        classement.insert(j-1,[ population[k],time ])
-                        break
-    for k in range(len(classement)):
-        pop_final.append( classement[k][0] )
+        evaluation[k] = population[k].CPUScheduling[0]
+
+    for key, value in sorted(evaluation.items(), key=lambda x: x[1])[:n]:
+        if verbose:
+            print(f'{key} is selected with a score of {value}. The combination is {print_ordre(population[key])}')
+        pop_final.append(population[key])
+
     return pop_final
+
+
+# TESTS
+
+if testLaunch:
+    # TODO : implement small tests to test all the functions
+    pass
