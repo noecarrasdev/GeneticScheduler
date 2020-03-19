@@ -1,0 +1,22 @@
+todolist for the whole project
+
+________ CODE
+
+TODO : clean the code (comment, typing, etc)
+TODO : use metrics to compare scores
+TODO : create visualisation algorithms for CPUs and what each modification does on 1 or 2 individuals
+TODO : fix the initialisation
+TODO : homemade graph to modify to analyze the behaviour of our algorithm
+
+
+________ INFORMATION
+
+TODO : clean presentation for next week
+
+
+________ CLOUD
+
+TODO : implement simple projet with MPI
+TODO : simple project with parallel computing on AZURE
+TODO : implement MPI on our project
+TODO : deploy it on
