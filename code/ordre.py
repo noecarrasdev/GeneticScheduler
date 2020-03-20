@@ -13,23 +13,48 @@ testLaunch = True
 class Ordre:
     def __init__(self, ordre):
         '''
-        :param ordre: np.array([integers])
+        :param ordre: np.array([task])
         there's no test of this in this function but be careful with it !
         '''
-        self.ordre = ordre
+        try:
+            if type(ordre) == type(np.array([1])):
+                if len(ordre) == 0 or type(ordre[0]) == type(task.Task(1, time_personalized.TimeTask(1, 2, 3, 4), [])):
+                    self.ordre = ordre
+                else:
+                    print('must be Task inside of the array')
+                    self.ordre = np.array([])
+            else:
+                print('must be a np.array')
+                self.ordre = np.array([])
+        except:
+            print('unexpected error')
+            self.ordre = np.array([])
 
-    def waitingTime(self, CpuOrder, task):
+    def __str__(self):
+        n = len(self.ordre)
+        message = 'Ordre : '
+        if n > 0:
+            for k in range(n):
+                message += (str(self.ordre[k].ID) + ' - ')
+        elif n == 0:
+            message = 'empty Ordre'
+        else:
+            message = 'error'
+        return message
+
+    def waitingTime(self, CpuOrder, task, N):
         '''
         :param CpuOrder: an order of tasks in the CPU
         :param task: next Task to add
+        :param N: number of cores
         :return: TaskTime of the time needed to wait to place the new task
         '''
         listDep = task.dependance
-        maxTime = time_personalized.TaskTime(0, 0, 0, 0)
+        maxTime = time_personalized.TimeTask(0, 0, 0, 0)
         for i in range(0, N):
             # first task of a core
             if CpuOrder[i] == []:
-                timeAc = time_personalized.TaskTime(0, 0, 0, 0)
+                timeAc = time_personalized.TimeTask(0, 0, 0, 0)
             else:
                 other_task = CpuOrder[i][-1]
                 # the other task is a dependency
@@ -37,7 +62,7 @@ class Ordre:
                     timeAc = other_task[0].time
                 # it isn't
                 else:
-                    timeAc = time_personalized.TaskTime(0, 0, 0, 0)
+                    timeAc = time_personalized.TimeTask(0, 0, 0, 0)
             if maxTime.isSmaller(timeAc):
                 maxTime = timeAc
         return maxTime
@@ -50,14 +75,14 @@ class Ordre:
         - scheduling of the tasks (:type: [N * [[task, beginTime], [task, beginTime], ...] ])
         '''
         CpuOrder = [[] for _ in range(0, N)]
-        times = [time_personalized.time(0, 0, 0, 0) for _ in range(0, N)]
+        times = [time_personalized.TimeTask(0, 0, 0, 0) for _ in range(0, N)]
 
         for task in self.ordre:
             # finding the core with the smallest time
             minCore = time_personalized.argmini(times)
 
             # find until when to wait on this core (resolve the Dependancies)
-            beginTime = times[minCore].add(self.waitingTime(CpuOrder, task))
+            beginTime = times[minCore].add(self.waitingTime(CpuOrder, task, N))
 
             # updates the informations to continue with next tasks
             CpuOrder[minCore].append([task, beginTime])
@@ -66,10 +91,34 @@ class Ordre:
         return time_personalized.maxTime(times), CpuOrder
 
 
-    def mutation(self):
+    def mutation_in_place(self):
         '''
         randomly mutates on 1 task in this Ordre
-        :return:
+        :return: void
+        '''
+        ind_inf = 0
+        n = len(self.ordre)
+        ind_sup = n-1
+        ind_mut = np.random.randint(0, n)
+        task_mut = self.ordre[ind_mut]
+        for k in range(ind_mut):
+            task = self.ordre[k]
+            if int(task.ID) in task_mut.dependance:
+                ind_inf = k + 1
+        for k in range(n - ind_mut - 1):
+            task = self.ordre[n - k - 1]
+            if int(task_mut.ID) in task.dependance:
+                ind_sup = n - k - 2
+        ind_new = ind_mut
+        while ind_new == ind_mut:
+            ind_new = np.random.randint(ind_inf, ind_sup + 1)
+        outordre = np.insert(np.delete(self.ordre, ind_mut), ind_new, task_mut)
+        self.ordre = outordre
+
+    def mutation_out(self):
+        '''
+        randomly mutates on 1 task in this Ordre
+        :return: void
         '''
         ind_inf = 0
         n = len(self.ordre)
@@ -84,9 +133,12 @@ class Ordre:
             task = self.ordre[n - k - 1]
             if int(task_mut.ID) in task.dependance:
                 ind_sup = n - k - 2
-        ind_new = np.random.randint(ind_inf, ind_sup + 1)
-        del self.ordre[ind_mut]
-        self.ordre.insert(ind_new, task_mut)
+        ind_new = ind_mut
+        while ind_new == ind_mut:
+            ind_new = np.random.randint(ind_inf, ind_sup + 1)
+        outordre = Ordre(np.insert(np.delete(self.ordre, ind_mut), ind_new, task_mut))
+        return outordre
+
 
 
 def mutation_pop(population, prob_mutation, nb_max_mutation):
@@ -100,10 +152,10 @@ def mutation_pop(population, prob_mutation, nb_max_mutation):
     for k in range(len(population)):
         for i in range(nb_max_mutation):
             if np.random.random() < prob_mutation:
-                population[k].mutation()
+                population[k].mutation_in_place()
 
 
-def croisement(ordre1, ordre2, bloc_taille=1):
+def crossover_2_parents(parent_ordre1, parent_ordre2, bloc_taille=2):
     # TODO : améliorer ça pour mettre plus de parents possibles
     # TODO : utilité de blocs de taille variable ?
     '''
@@ -112,18 +164,21 @@ def croisement(ordre1, ordre2, bloc_taille=1):
     :param bloc_taille: size of the chunks to keep
     :return: Ordre issued from the crossover
     '''
-    assert len(ordre1.ordre) == len(ordre2.ordre)
     ordre_nouvel = []
     ID_list = []
+    ordre1 = parent_ordre1.ordre
+    ordre2 = parent_ordre2.ordre
+    assert len(ordre1) == len(ordre2)
 
-    for i in range(ceil(len(ordre1.ordre) / bloc_taille)):
-        temp_list = ordre1.ordre[i * bloc_taille: (i + 1) * bloc_taille] + ordre2.ordre[
-            i * bloc_taille: (i + 1) * bloc_taille]
-        for task in temp_list:
-            if task.ID not in ID_list:
-                ordre_nouvel.append(task)
-                ID_list.append(task.ID)
-    return Ordre(ordre_nouvel)
+    for i in range(ceil(len(ordre1) / bloc_taille)):
+        temp_list1 = ordre1[i * bloc_taille: (i + 1) * bloc_taille]
+        temp_list2 = ordre2[i * bloc_taille: (i + 1) * bloc_taille]
+        for tpl in (temp_list1, temp_list2):
+            for task in tpl:
+                if task.ID not in ID_list:
+                    ordre_nouvel.append(task)
+                    ID_list.append(task.ID)
+    return Ordre(np.array(ordre_nouvel))
 
 
 def croisement_pop(population, size_block):
@@ -131,7 +186,7 @@ def croisement_pop(population, size_block):
     for k in range(len(population)//2):
         ordre1 = population[2*k]
         ordre2 = population[2*k+1]
-        population.append(croisement(ordre1,ordre2,size_block))
+        population.append(crossover_2_parents(ordre1, ordre2, size_block))
 
 
 def print_ordre(ordre):
@@ -144,7 +199,7 @@ def print_ordre(ordre):
         print(ordre.ordre[k].ID)
 
 
-def selection(population, n, verbose):
+def selection_nbest(population, n, verbose=True):
     '''
     :param population: [Ordre] to update
     :param n: number of orders to keep
@@ -173,4 +228,9 @@ def selection(population, n, verbose):
 
 if testLaunch:
     # TODO : implement small tests to test all the functions
+
+
+
+
+
     pass

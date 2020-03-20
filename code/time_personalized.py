@@ -1,3 +1,5 @@
+# CODE
+
 class TimeTask:
     def __init__(self, heure, minute ,seconde , ms):
         self.heure = heure
@@ -36,6 +38,14 @@ class TimeTask:
         else :
             return False
 
+    def tomsecond(self):
+        seconds = 0
+        seconds += self.ms
+        seconds += self.seconde * 1000
+        seconds += self.minute * 1000 * 60
+        seconds += self.heure * 1000 * 60 * 60
+        return seconds
+
 
 def getTimeFromData(data):
     # data form is hh:mm:ss.sssssss STRING
@@ -65,3 +75,24 @@ def maxTime(times):
         if max.isSmaller(i):
             max = i
     return max
+
+def metric_ratio(over, under):
+    '''
+    :param over: TimeTask
+    :param under: TimeTask
+    :return: float corresponding to the time ratio
+    '''
+    print(over.tomsecond(), under.tomsecond())
+    return over.tomsecond()/under.tomsecond()
+
+
+
+# TEST LAUNCH
+
+testLaunch = False
+
+
+# TEST
+
+if testLaunch:
+    pass
