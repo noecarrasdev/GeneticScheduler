@@ -27,7 +27,7 @@ def ideal_time(dict):
 
 
 # TEST LAUNCH
-testLaunch = True
+testLaunch = False
 
 
 # TEST

@@ -3,10 +3,6 @@ from math import ceil
 import time_personalized
 import task
 
-# TEST LAUNCH
-
-testLaunch = True
-
 
 # CODE
 
@@ -49,11 +45,11 @@ class Ordre:
         :param N: number of cores
         :return: TaskTime of the time needed to wait to place the new task
         '''
-        listDep = task.dependance
+        listDep = task.dependence
         maxTime = time_personalized.TimeTask(0, 0, 0, 0)
         for i in range(0, N):
             # first task of a core
-            if CpuOrder[i] == []:
+            if not CpuOrder[i]:
                 timeAc = time_personalized.TimeTask(0, 0, 0, 0)
             else:
                 other_task = CpuOrder[i][-1]
@@ -103,11 +99,11 @@ class Ordre:
         task_mut = self.ordre[ind_mut]
         for k in range(ind_mut):
             task = self.ordre[k]
-            if int(task.ID) in task_mut.dependance:
+            if int(task.ID) in task_mut.dependence:
                 ind_inf = k + 1
         for k in range(n - ind_mut - 1):
             task = self.ordre[n - k - 1]
-            if int(task_mut.ID) in task.dependance:
+            if int(task_mut.ID) in task.dependence:
                 ind_sup = n - k - 2
         ind_new = ind_mut
         while ind_new == ind_mut:
@@ -127,11 +123,11 @@ class Ordre:
         task_mut = self.ordre[ind_mut]
         for k in range(ind_mut):
             task = self.ordre[k]
-            if int(task.ID) in task_mut.dependance:
+            if int(task.ID) in task_mut.dependence:
                 ind_inf = k + 1
         for k in range(n - ind_mut -1):
             task = self.ordre[n - k - 1]
-            if int(task_mut.ID) in task.dependance:
+            if int(task_mut.ID) in task.dependence:
                 ind_sup = n - k - 2
         ind_new = ind_mut
         while ind_new == ind_mut:
@@ -139,6 +135,20 @@ class Ordre:
         outordre = Ordre(np.insert(np.delete(self.ordre, ind_mut), ind_new, task_mut))
         return outordre
 
+    def isLegal(self, number_of_tasks):
+        '''
+        :param number_of_tasks: number of tasks in the whole graph
+        :return: Boolean representing if this ordre is valid
+        '''
+        if len(self.ordre) != number_of_tasks:
+            return False
+        resolved_tasks = []
+        for task in self.ordre:
+            for dependency in task.dependence:
+                if dependency not in resolved_tasks:
+                    return False
+            resolved_tasks.append(task.ID)
+        return True
 
 
 def mutation_pop(population, prob_mutation, nb_max_mutation):
@@ -199,6 +209,25 @@ def print_ordre(ordre):
         print(ordre.ordre[k].ID)
 
 
+def print_cpuord(cpuord):
+    '''
+    :param cpuord: list of the form [N * [task (Task object), beginigTime (TimeTask object)]]
+    :return: np.array() of proper strings describing the cpu order
+    '''
+    end_list = [[f'core {i}'] for i in range(len(cpuord))]
+    for i_cpu in range(len(cpuord)):
+        for i_task in range(len(cpuord[i_cpu])):
+            taskandtime = cpuord[i_cpu][i_task]
+            #print(i_cpu, i_task, taskandtime)
+            try:
+                if (taskandtime and len(taskandtime) == 2):
+                    end_list[i_cpu].append((str(taskandtime[0]), str(taskandtime[1])))
+                else:
+                    print(f'error, empty entry at {i_cpu} core and over {i_task} entry')
+            except:
+                print(f'real error happened !! at {i_cpu} core and over {i_task} entry')
+    return end_list
+
 def selection_nbest(population, n, verbose=True):
     '''
     :param population: [Ordre] to update
@@ -224,13 +253,4 @@ def selection_nbest(population, n, verbose=True):
     return pop_final
 
 
-# TESTS
-
-if testLaunch:
-    # TODO : implement small tests to test all the functions
-
-
-
-
-
-    pass
+# TESTS in the main file (requires more than this file only)

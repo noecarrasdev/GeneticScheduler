@@ -2,11 +2,16 @@ todolist for the whole project
 
 ________ CODE
 
-TODO : clean the code (comment, typing, testing) : time, CpuOrder, initialisation
+OK - TODO : clean the code (comment, typing, testing) + correct when needed : all files
+OK - TODO : fix the initialization
+OK - TODO : test the code on bigger graphs to study the time problem --> times are actually different for different initializations on big graphs
 OK - TODO : use metrics to compare scores
 TODO : create visualisation algorithms for CPUs and Orders and what each modification does on 1 or 2 individuals
 TODO : visualisation with NetworkX of the graphs
-TODO : fix the initialisation, fix CpuOrder
+
+
+________ ANALYSIS
+
 TODO : homemade graph to modify to analyze the behaviour of our algorithm (when working properly)
 
 
@@ -17,6 +22,7 @@ TODO : clean presentation for next week
 
 ________ CLOUD
 
+TODO : optimize data structures used
 TODO : implement simple projet with MPI
 TODO : simple project with parallel computing on AZURE
 TODO : implement MPI on our project

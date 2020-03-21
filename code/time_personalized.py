@@ -70,6 +70,10 @@ def argmini(times):
 
 
 def maxTime(times):
+    '''
+    :param times: list of TimeTask
+    :return: the bigger time
+    '''
     max = TimeTask(0, 0, 0, 0)
     for i in times:
         if max.isSmaller(i):
@@ -95,4 +99,13 @@ testLaunch = False
 # TEST
 
 if testLaunch:
-    pass
+    time1 = TimeTask(0,1,2,300)
+    time2 = TimeTask(1,2,6,700)
+    time3 = time1.add(time2)
+    print('time 1 : ', time1)
+    print('time 2 : ', time2)
+    print('time 3 (t1+t2) : ', time3)
+    print('test inequalities, true statement : ', time1.isSmaller(time2))
+    print('test tomsecond : return 62300 : ', time1.tomsecond())
+    print('should return time1 index ie 0 : ', argmini([time1, time2, time3]))
+    print('should return time3 as TimeTask : ', maxTime([time1, time2, time3]))

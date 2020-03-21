@@ -6,29 +6,47 @@ import data_loading as dtld
 import time_personalized
 from pathlib import Path
 
-# graph to use
-data_folder = Path("../graphs")
-path_graph = data_folder / "smallRandom.json"
-print(path_graph)
-# parameters
-n_population = 10
 
+def test_ordre_small():
+    '''
+    works with smallRandom and persoGraph
+    '''
 
-def test_ordre(path_graph, n_population, mutate_test=False):
+    # graph to use
+    data_folder = Path("../graphs")
+    path_graph = data_folder / "smallRandom.json"
+    print(path_graph)
+
+    # parameters
+    n_population = 10
+    mutate_test = False
+
     # Load the tasks
     tasks_dict = dtld.loadTasks(path_graph)
     optimal_time = dtld.ideal_time(tasks_dict)
 
-    # creation d'ordres
+    # creation d'ordres pour l'exemple persoGraph.json
+    '''
     ordre_arbitrary1 = [1, 2, 3, 4, 5, 6, 7, 10, 8, 9]
-    ordre1 = np.array([tasks_dict[i] for i in ordre_arbitrary1])
     ordre_arbitrary2 = [1, 3, 6, 2, 4, 5, 7, 8, 9, 10]
+    '''
+
+    # ordres de départ pour le smallRandom
+    ordre_arbitrary1 = [i for i in range(1, 11)]
+    ordre_arbitrary2 = [1, 2, 5, 8, 10, 3, 4, 6, 7, 9]
+
+    ordre1 = np.array([tasks_dict[i] for i in ordre_arbitrary1])
     ordre2 = np.array([tasks_dict[i] for i in ordre_arbitrary2])
 
     test_ordre1 = ordre.Ordre(ordre1)
     test_ordre2 = ordre.Ordre(ordre2)
     test_ordre_empty = ordre.Ordre(np.array([]))
     test_ordre_error = ordre.Ordre([None])  # throws an error, then this ordre becomes an empty one
+    test_illegal_order = ordre.Ordre(np.array([1, 2, 8, 5, 10, 3, 4, 6, 7, 9]))
+
+    print(test_ordre1.isLegal(10))
+    print(test_ordre2.isLegal(10))
+    print(test_illegal_order.isLegal(10))
 
     # printing
     print(test_ordre1)
@@ -60,8 +78,9 @@ def test_ordre(path_graph, n_population, mutate_test=False):
     print('times taken by 2_4 : ', time_taken_2_4)
     print('times taken by 1_2 : ', time_taken_1_2)
 
-    print(CpuOrder12)
-    print(CpuOrder14)
+    print(ordre.print_cpuord(CpuOrder12))
+    print(ordre.print_cpuord(CpuOrder14))
+    print(ordre.print_cpuord(CpuOrder24))
 
     ratio_1_4 = time_personalized.metric_ratio(time_taken_1_4, optimal_time)*4
     print(ratio_1_4)
@@ -70,13 +89,42 @@ def test_ordre(path_graph, n_population, mutate_test=False):
     ratio_1_2 = time_personalized.metric_ratio(time_taken_1_4, optimal_time)*2
     print(ratio_1_2)
 
-    # TODO : always the same time scheduled figure out
+    # TODO : always the same time scheduled figure out -----> trop petits exemples ??? tester sur plus gros qd l'initialisation marche
+    # TODO : sometimes the mutations are blocking this execution ??? maybye with non legal orders ?
+
+#test_ordre_small()
 
 
-mutate_test = False
-test_ordre(path_graph, n_population, mutate_test)
+def test_init_loss():
+    '''
+    test of the loss function on bigger graphs
+    '''
 
+    # graph to use
+    data_folder = Path("../graphs")
+    path_graph = data_folder / "mediumRandom.json"
+    print(path_graph)
 
+    # Load the tasks
+    tasks_dict = dtld.loadTasks(path_graph)
+    optimal_time = dtld.ideal_time(tasks_dict)
+
+    # parameters
+    n_tasks = len(tasks_dict)
+    n_pop = 10
+    n_cores = 4
+
+    # initial population batch
+    population = initialisation.population_initiale(tasks_dict, n_pop)
+    for ind in population:
+        print(ind)
+
+    # scores of the population:
+    scores = []
+    for ind in population:
+        time_curr, Cpu_curr = ind.CPUScheduling(n_cores)
+        scores.append(n_cores * time_personalized.metric_ratio(time_curr, optimal_time))
+    print(scores)
 
 
 

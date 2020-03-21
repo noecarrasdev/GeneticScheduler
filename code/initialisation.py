@@ -1,47 +1,92 @@
 import numpy as np
 import task
+import time_personalized
+import ordre
+import data_loading as dtld
+from pathlib import Path
+
+
+# CODE
 
 def initialisation_rand(graph):
     '''
-    :param graph: dict
+    :param graph: dict of tasks indeed by integers corresponding to the task.ID attribute
     :return: a valid combination
     '''
-
+    # initial lists
     n = len(graph)
     res = []
     frontier = []
 
-    # gives an image of the actual dependancies
-    task_dependancies = []
-    for i in range(n):
-        # string pour les nombres et appels au dico ?
-        task_dependancies.append(graph[f'{i}'].Dependencies)
+    # gives an image of the actual dependancies, to remove them during the algorithm
+    # nb : graphs starts at 0 so in the position [0] we place a None marker
+    task_dependencies = [None]
+    for i in range(1, n + 1):
+        task_dependencies.append(graph[i].dependence)
 
-    # gives task depending of the one searched
-    task_todepend = [[] * n]
-    for i in range(n):
-        for dep in task_dependancies[i]:
+    # gives tasks depending of the current task
+    task_todepend = [[] for i in range(n + 1)]
+    for i in range(1, n + 1):
+        for dep in task_dependencies[i]:
             task_todepend[dep].append(i)
 
-    for key in graph.keys():
-        if not graph[key].Dependencies:
-            frontier.append(key)
+    # creation de la frontière
+    for i in range(1, len(task_dependencies)):
+        if not task_dependencies[i]:
+            frontier.append(i)
 
+    # ajout progressif des enfants
     while len(res) < n:
-        random_task = np.random.choice(frontier, 1)
+        random_task = np.random.choice(frontier, 1)[0]
         res.append(random_task)
         frontier.remove(random_task)
         for enfant in task_todepend[random_task]:
-            task_dependancies[enfant].remove(random_task)
-            if task_dependancies[enfant] == []:
+            task_dependencies[enfant].remove(random_task)
+            if not task_dependencies[enfant]:
                 frontier.append(enfant)
 
-    return res
+    # transform res into an Ordre object
+    res_ordre = ordre.Ordre(np.array([graph[i] for i in res]))
+
+    if res_ordre.isLegal(n):
+        return res_ordre
+    else:
+        print('non-legal child')
+        return None
 
 
 def population_initiale(graph, nombre):
+    '''
+    :param graph: dict of tasks indeed by integers corresponding to the task.ID attribute
+    :param nombre: number of initialized individuals wanted
+    :return: a list of valid Ordre objects
+    '''
     population = []
     for i in range(nombre):
         population.append(initialisation_rand(graph))
     return population
 
+
+# TEST LAUNCH
+
+testLaunch = False
+
+
+# TESTS
+
+if testLaunch:
+    # graph to use
+    data_folder = Path("../graphs")
+    path_graph = data_folder / "smallRandom.json"
+
+    # Load the tasks
+    tasks_dict = dtld.loadTasks(path_graph)
+
+    # real initialisation
+    first_list = initialisation_rand(tasks_dict)
+    print('result is : ', first_list, ', legal ? : ', first_list.isLegal(len(tasks_dict)))
+
+    # batch initialisation
+    pop_test = population_initiale(tasks_dict, 10)
+    for i in range(10):
+        print(pop_test[i], pop_test[i].isLegal(10))
