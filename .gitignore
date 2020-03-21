@@ -133,3 +133,4 @@ graphs
 
 # other python things to ignore
 .idea
+/.idea

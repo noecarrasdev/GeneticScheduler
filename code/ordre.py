@@ -228,7 +228,8 @@ def print_cpuord(cpuord):
                 print(f'real error happened !! at {i_cpu} core and over {i_task} entry')
     return end_list
 
-def selection_nbest(population, n, verbose=True):
+
+def selection_nbest_eval_inside(population, n, verbose=True):
     '''
     :param population: [Ordre] to update
     :param n: number of orders to keep
@@ -251,6 +252,49 @@ def selection_nbest(population, n, verbose=True):
         pop_final.append(population[key])
 
     return pop_final
+
+
+def selection_nbest(population, n, scores, verbose=False):
+    '''
+    :param population: [Ordre] to update
+    :param n: number of orders to keep
+    :param scores: list of the scores of the population (score = tps/(optimal/nbCPU))
+    :param verbose: Boolean to log into the console
+    :return: the new population
+    '''
+
+    n_pop = len(population)
+
+    if n > n_pop:
+        return 'error : you tried to select more nodes that there is in the population'
+
+    if verbose:
+        best_scores = [None] * n
+
+    score_ranks = sorted(range(len(scores)), key=lambda i:scores[i]) # indexes of the biggest indexes in decreasing order
+    best_elements = [None] * n
+    for i in range(n):
+        best_elements[i] = population[score_ranks[-i]]
+        if verbose:
+            best_scores[i] = scores[score_ranks[-i]]
+
+    if verbose:
+        print('best elements are : ')
+        for ind in best_elements:
+            print(str(ind), ' is selected with a score of : ', )
+
+    return best_elements
+
+
+def population_eval(pop, n_cores, optimal):
+    '''
+    :param pop: list of Ordres
+    :return: list of scores (corresponding to the ordres with the same indexes)
+    '''
+    scores = []
+    for ind in pop:
+        scores.append(n_cores*time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
+    return scores
 
 
 # TESTS in the main file (requires more than this file only)

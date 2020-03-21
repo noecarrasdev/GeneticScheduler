@@ -7,6 +7,82 @@ import time_personalized
 from pathlib import Path
 
 
+# PARAMETERS
+
+# graph to use
+data_folder = Path("../graphs")
+path_graph = data_folder / "smallRandom.json"
+# sizes
+n_population = 10
+n_cores = 4
+# generation : sum must be equal to n_population
+n_selected = 4          # number of individuals kept during the selection
+n_mutated = 4
+n_crossed = 2
+# genetics
+mutations_prob = 0.2
+nb_mut_max = 4
+crossover_bloc_size = (2, 4) # must be inferior to n_tasks
+# other with crossovers ?
+# execution
+epochs = 3
+
+
+# MAIN CODE
+
+def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True):
+    # load datas
+    tasks_dict = dtld.loadTasks(path_graph)
+    n_tasks = len(tasks_dict)
+    optimal_time = dtld.ideal_time(tasks_dict)
+
+    # initial population
+    population = initialisation.population_initiale(tasks_dict, n_population)
+    scores = ordre.population_eval(population, n_cores, optimal_time)
+
+    # execution
+    for epoch in range(epochs):
+        new_pop = []
+        if verbose:
+            print(f'epoch n°{epoch}')
+        # selection of the bests
+        if verbose:
+            best_ordres = ordre.selection_nbest(population, n_selected, scores, verbose=True)
+        else:
+            best_ordres = ordre.selection_nbest(population, n_selected, scores)
+        # mutations
+        mutated_ordres = []
+        for i in range(n_mutated):
+            add_index = np.random.randint(0, n_selected, 1)
+            mutated_ordres.append(best_ordres[add_index])
+        ordre.mutation_pop(mutated_ordres, mutations_prob, nb_mut_max)
+        # crossovers
+        cross_ordres = []
+        for i in range(n_crossed):
+            parents = np.random.randint(0, n_selected, 2)
+            bloc_size = np.random.randint(crossover_bloc_size[0], crossover_bloc_size[1])
+            cross_ordres.append(ordre.crossover_2_parents(parents[0], parents[1], bloc_size))
+        # evaluations
+        population = best_ordres + mutated_ordres + cross_ordres
+        scores = ordre.population_eval(population, n_cores, optimal_time)
+
+    # log results to the console
+    print('\n\n _______________________________RESULTS_______________________________')
+    best_result = ordre.selection_nbest(population, scores)
+    print(best_result)
+    print('Is the best ordre, with a score of : ', ordre.population_eval([best_result], n_cores, optimal_time))
+    print('______________________________________________________________________\n\n')
+
+    return best_result
+
+
+# START ALGO
+
+best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs)
+
+
+# LARGER TESTS
+
 def test_ordre_small():
     '''
     works with smallRandom and persoGraph
@@ -69,7 +145,6 @@ def test_ordre_small():
     test_ordre4 = ordre.crossover_2_parents(test_ordre1, test_ordre2)
     print('child from the 2 first orders : ', test_ordre4)
 
-
     # CPU scheduling and loss function
     time_taken_1_4, CpuOrder14 = test_ordre1.CPUScheduling(4)
     time_taken_2_4, CpuOrder24 = test_ordre2.CPUScheduling(4)
@@ -82,17 +157,12 @@ def test_ordre_small():
     print(ordre.print_cpuord(CpuOrder14))
     print(ordre.print_cpuord(CpuOrder24))
 
-    ratio_1_4 = time_personalized.metric_ratio(time_taken_1_4, optimal_time)*4
+    ratio_1_4 = time_personalized.metric_ratio(time_taken_1_4, optimal_time) * 4
     print(ratio_1_4)
-    ratio_2_4 = time_personalized.metric_ratio(time_taken_1_4, optimal_time)*4
+    ratio_2_4 = time_personalized.metric_ratio(time_taken_1_4, optimal_time) * 4
     print(ratio_2_4)
-    ratio_1_2 = time_personalized.metric_ratio(time_taken_1_4, optimal_time)*2
+    ratio_1_2 = time_personalized.metric_ratio(time_taken_1_4, optimal_time) * 2
     print(ratio_1_2)
-
-    # TODO : always the same time scheduled figure out -----> trop petits exemples ??? tester sur plus gros qd l'initialisation marche
-    # TODO : sometimes the mutations are blocking this execution ??? maybye with non legal orders ?
-
-#test_ordre_small()
 
 
 def test_init_loss():
@@ -125,43 +195,3 @@ def test_init_loss():
         time_curr, Cpu_curr = ind.CPUScheduling(n_cores)
         scores.append(n_cores * time_personalized.metric_ratio(time_curr, optimal_time))
     print(scores)
-
-
-
-
-
-
-'''
-
-
-
-def main():
-    population = []
-    n = 10
-    # ___________ N = 4
-    # Création d'une mini population de 10individus
-    for k in range(n):
-        tasks = data_loading.loadTasks('mediumRandom.json')
-        population.append(ordre.Ordre(tasks))
-    for k in range(n):
-        for mut in range(1000): # chaque individu subit 20 mutation pour se différencier
-            population[k].mutation()
-    population = ordre.selection(population,n)
-    for k in range(len(population)):
-        print(population[k].CPUScheduling())
-    
-
-    for k in range(5): # On fait 5 itérations
-        ordre.croisement_pop(population,10) # On croise par block de 10
-        ordre.mutation_pop(population,0.5,1000) # Puis on mute 50%
-
-
-        # On ne garde que les 10meilleurs
-        population = ordre.selection(population,n)
-
-    print("////:")
-    for k in range(len(population)):
-        print(population[k].CPUScheduling())
-
-    pass
-'''

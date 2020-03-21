@@ -6,13 +6,15 @@ OK - TODO : clean the code (comment, typing, testing) + correct when needed : al
 OK - TODO : fix the initialization
 OK - TODO : test the code on bigger graphs to study the time problem --> times are actually different for different initializations on big graphs
 OK - TODO : use metrics to compare scores
+TODO : debug the main execution
 TODO : create visualisation algorithms for CPUs and Orders and what each modification does on 1 or 2 individuals
 TODO : visualisation with NetworkX of the graphs
 
 
 ________ ANALYSIS
 
-TODO : homemade graph to modify to analyze the behaviour of our algorithm (when working properly)
+TODO : homemade graph to modify to analyze the behaviour of our algorithm (when working properly)7
+TODO : sometimes the mutations are blocking the execution ??? maybye with non legal orders ? check it out
 
 
 ________ INFORMATION
