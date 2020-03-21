@@ -11,21 +11,21 @@ from pathlib import Path
 
 # graph to use
 data_folder = Path("../graphs")
-path_graph = data_folder / "smallRandom.json"
+path_graph = data_folder / "mediumRandom.json"
 # sizes
-n_population = 10
+n_population = 100
 n_cores = 4
 # generation : sum must be equal to n_population
-n_selected = 4          # number of individuals kept during the selection
-n_mutated = 4
-n_crossed = 2
+n_selected = 40          # number of individuals kept during the selection
+n_mutated = 40
+n_crossed = 20
 # genetics
 mutations_prob = 0.2
-nb_mut_max = 4
-crossover_bloc_size = (2, 4) # must be inferior to n_tasks
+nb_mut_max = 15
+crossover_bloc_size = (100, 300) # must be inferior to n_tasks
 # other with crossovers ?
 # execution
-epochs = 3
+epochs = 20
 
 
 # MAIN CODE
@@ -44,7 +44,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     for epoch in range(epochs):
         new_pop = []
         if verbose:
-            print(f'epoch n°{epoch}')
+            print(f'\n\n_________________________epoch n°{epoch}__________________________\n')
         # selection of the bests
         if verbose:
             best_ordres = ordre.selection_nbest(population, n_selected, scores, verbose=True)
@@ -53,7 +53,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         # mutations
         mutated_ordres = []
         for i in range(n_mutated):
-            add_index = np.random.randint(0, n_selected, 1)
+            add_index = np.random.randint(0, n_selected, 1)[0]
             mutated_ordres.append(best_ordres[add_index])
         ordre.mutation_pop(mutated_ordres, mutations_prob, nb_mut_max)
         # crossovers
@@ -61,17 +61,18 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         for i in range(n_crossed):
             parents = np.random.randint(0, n_selected, 2)
             bloc_size = np.random.randint(crossover_bloc_size[0], crossover_bloc_size[1])
-            cross_ordres.append(ordre.crossover_2_parents(parents[0], parents[1], bloc_size))
+            cross_ordres.append(ordre.crossover_2_parents(best_ordres[parents[0]], best_ordres[parents[1]], bloc_size))
         # evaluations
         population = best_ordres + mutated_ordres + cross_ordres
         scores = ordre.population_eval(population, n_cores, optimal_time)
 
     # log results to the console
-    print('\n\n _______________________________RESULTS_______________________________')
-    best_result = ordre.selection_nbest(population, scores)
-    print(best_result)
+    bar = '\n\n_________________________________________________________________\n'
+    print(bar + '\n _______________________________RESULTS_______________________________')
+    best_result = ordre.selection_nbest(population, 1, scores)[0]
+    #print(best_result)
     print('Is the best ordre, with a score of : ', ordre.population_eval([best_result], n_cores, optimal_time))
-    print('______________________________________________________________________\n\n')
+    print(bar + bar + '\n\n')
 
     return best_result
 

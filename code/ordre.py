@@ -280,8 +280,8 @@ def selection_nbest(population, n, scores, verbose=False):
 
     if verbose:
         print('best elements are : ')
-        for ind in best_elements:
-            print(str(ind), ' is selected with a score of : ', )
+        for i in range(len(best_elements)):
+            print(str(best_elements[i]), ' is selected with a score of : ', best_scores[i])
 
     return best_elements
 
