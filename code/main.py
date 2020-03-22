@@ -5,6 +5,7 @@ import ordre
 import data_loading as dtld
 import time_personalized
 from pathlib import Path
+import analysis
 
 
 # PARAMETERS
@@ -25,12 +26,12 @@ nb_mut_max = 15
 crossover_bloc_size = (100, 300) # must be inferior to n_tasks
 # other with crossovers ?
 # execution
-epochs = 20
+epochs = 3
 
 
 # MAIN CODE
 
-def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True):
+def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, analytics=True):
     # load datas
     tasks_dict = dtld.loadTasks(path_graph)
     n_tasks = len(tasks_dict)
@@ -39,6 +40,11 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # initial population
     population = initialisation.population_initiale(tasks_dict, n_population)
     scores = ordre.population_eval(population, n_cores, optimal_time)
+
+    # analytics
+    ana_ordres = []
+    ana_scores = []
+    ana_means = []
 
     # execution
     for epoch in range(epochs):
@@ -65,14 +71,29 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         # evaluations
         population = best_ordres + mutated_ordres + cross_ordres
         scores = ordre.population_eval(population, n_cores, optimal_time)
+        # analytics
+        if analytics:
+            ana_ordres.append(best_ordres[0].ordre)
+            ana_scores.append(scores[0])
+            ana_means.append(ordre.mean(scores))
 
     # log results to the console
-    bar = '\n\n_________________________________________________________________\n'
-    print(bar + '\n _______________________________RESULTS_______________________________')
+    bar = '\n_________________________________________________________________'
+    print('\n' + bar + '\n_______________________________RESULTS_______________________________\n')
     best_result = ordre.selection_nbest(population, 1, scores)[0]
     #print(best_result)
-    print('Is the best ordre, with a score of : ', ordre.population_eval([best_result], n_cores, optimal_time))
-    print(bar + bar + '\n\n')
+    print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores, optimal_time))
+    print(bar + '\n\n')
+
+    # analytics score printing
+    if analysis:
+        analysis.performance_evaluation(ana_scores, ana_means)
+
+    # graph displaying (initial + a chaque époque (figure avec onglets en mode diapo ? tkinter ?)
+
+    # blanks analysis
+    if analysis:
+        analysis.blank_analysis(best_result.CPUScheduling(n_cores)[1])
 
     return best_result
 

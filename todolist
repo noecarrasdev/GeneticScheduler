@@ -2,16 +2,15 @@ todolist for the whole project
 
 ________ CODE
 
-TODO : cleaner les logs de la fonction main
-TODO : create visualisation algorithms for CPU and what each modification does on 1 or 2 individuals
-TODO : visualisation with NetworkX of the graphs, and colormap according to the order
+TODO : ??? create visualisation algorithms for CPU and zoom on the different parts with blanks
+TODO : visualisation with NetworkX of the graphs, and colormap according to the order of execution, figure with tkinter to display it and pass slides in one figure
+TODO : améliorer le CpuOrder pour compresser les blancs
 
 
 ________ ANALYSIS
 
-TODO : homemade graph to modify to analyze the behaviour of our algorithm (when working properly)7
-TODO : sometimes the mutations are blocking the execution ??? maybye with non legal orders ? check it out
-TODO : monitorer l'évolution des scores et la rapidité selon les paramètres pour optimiser pour chaque graph --> Parlléliser
+TODO : ??? homemade graph to modify to analyze the behaviour of our algorithm (when working properly)
+TODO : FIX analyze the blank sequences : size, distribution, biggest + idem for tasks
 
 
 ________ INFORMATION
@@ -26,3 +25,11 @@ TODO : implement simple projet with MPI
 TODO : simple project with parallel computing on AZURE
 TODO : implement MPI on our project
 TODO : deploy it on
+
+
+_________ NOTE !!!!!!!!!
+
+vous aurez peut-être un problème pour le lancer dans pycharm a cause d'une
+erreur Qt platform plugin windows, vous pouvez virer cette erreur avec :
+
+https://stackoverflow.com/questions/41994485/error-could-not-find-or-load-the-qt-platform-plugin-windows-while-using-matplo

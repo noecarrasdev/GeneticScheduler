@@ -86,7 +86,6 @@ def metric_ratio(over, under):
     :param under: TimeTask
     :return: float corresponding to the time ratio
     '''
-    print(over.tomsecond(), under.tomsecond())
     return over.tomsecond()/under.tomsecond()
 
 

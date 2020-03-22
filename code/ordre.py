@@ -274,17 +274,30 @@ def selection_nbest(population, n, scores, verbose=False):
     score_ranks = sorted(range(len(scores)), key=lambda i:scores[i]) # indexes of the biggest indexes in decreasing order
     best_elements = [None] * n
     for i in range(n):
-        best_elements[i] = population[score_ranks[-i]]
+        best_elements[i] = population[score_ranks[i]]
         if verbose:
-            best_scores[i] = scores[score_ranks[-i]]
+            best_scores[i] = scores[score_ranks[i]]
 
     if verbose:
-        print('best elements are : ')
-        for i in range(len(best_elements)):
-            print(str(best_elements[i]), ' is selected with a score of : ', best_scores[i])
+        print('best is : ', best_scores[0])
+        print('average is : ', mean(best_scores))
 
     return best_elements
 
+def mean(L):
+    '''
+    :param L: list
+    :return: mean value
+    '''
+    sum = 0
+    for x in L:
+        sum += x
+    n = len(L)
+    if n > 0:
+        result = sum / len(L)
+    else:
+        result = 0
+    return result
 
 def population_eval(pop, n_cores, optimal):
     '''
