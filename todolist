@@ -2,15 +2,17 @@ todolist for the whole project
 
 ________ CODE
 
-TODO : ??? create visualisation algorithms for CPU and zoom on the different parts with blanks
 TODO : visualisation with NetworkX of the graphs, and colormap according to the order of execution, figure with tkinter to display it and pass slides in one figure
 TODO : améliorer le CpuOrder pour compresser les blancs
+TODO : create the colormap with matplotlib to see the execution
 
 
 ________ ANALYSIS
 
 TODO : ??? homemade graph to modify to analyze the behaviour of our algorithm (when working properly)
 TODO : FIX analyze the blank sequences : size, distribution, biggest + idem for tasks
+TODO : sometimes times aren't getting better ?
+TODO : run the code on more task graphs
 
 
 ________ INFORMATION
@@ -18,7 +20,7 @@ ________ INFORMATION
 TODO : clean presentation for next week
 
 
-________ CLOUD
+________ CLOUD AND PARALLELISATION
 
 TODO : optimize data structures used
 TODO : implement simple projet with MPI

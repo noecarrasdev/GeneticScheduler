@@ -6,6 +6,7 @@ import data_loading as dtld
 import time_personalized
 from pathlib import Path
 import analysis
+import printgraph
 
 
 # PARAMETERS
@@ -94,6 +95,9 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # blanks analysis
     if analysis:
         analysis.blank_analysis(best_result.CPUScheduling(n_cores)[1])
+
+    # graph printing
+    printgraph.print_plane_graph(tasks_dict)
 
     return best_result
 
