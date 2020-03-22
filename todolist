@@ -2,17 +2,29 @@ todolist for the whole project
 
 ________ CODE
 
-TODO : visualisation with NetworkX of the graphs, and colormap according to the order of execution, figure with tkinter to display it and pass slides in one figure
-TODO : améliorer le CpuOrder pour compresser les blancs
+TODO : améliorer le CpuOrder pour compresser les blancs ?
+TODO : implémenter d'autres selections, d'autres types de crossovers (autre type comme le groupe 2 ou bien juste notre type mais avec plus que 2 parents)
+TODO : mutations adaptatives ? force des mutations s'adapte selon la vitesse de convergence (augmente si le best converge bcp)
+TODO : monitorer les temps d'execution
+TODO : change the data structure of the ordre --> reference to a dict with the ID key ? or just transform the code completely to have the ordre be a simple list or array
+TODO : garder des individus moins bons pour faire des croisements et des mutations (sortir des optimum locaux)
+
+
+________ VISUALISATION
+
 TODO : create the colormap with matplotlib to see the execution
+TODO : visualisation with NetworkX of the graphs, and colormap according to the order of execution, figure with tkinter to display it and pass slides in one figure
 
 
 ________ ANALYSIS
 
 TODO : ??? homemade graph to modify to analyze the behaviour of our algorithm (when working properly)
 TODO : FIX analyze the blank sequences : size, distribution, biggest + idem for tasks
-TODO : sometimes times aren't getting better ?
 TODO : run the code on more task graphs
+TODO : analyze the effect of each parameter on computational time, results etc
+TODO : find how to optimize the convergence and the computational time
+TODO : analyze the repeatability of the results (sometimes with the same executions, the error in the result can vary of factors more than 10 !)
+TODO : regarder avec le temps mis en absolu par les ordres pour voir combien de coeurs on a intérêt à prendre
 
 
 ________ INFORMATION
@@ -29,11 +41,10 @@ TODO : implement MPI on our project
 TODO : deploy it on
 
 
-_________ NOTE !!!!!!!!!
+_________ NOTES !!!!!!!!!
 
 vous aurez peut-être un problème pour le lancer dans pycharm a cause d'une
 erreur Qt platform plugin windows, vous pouvez virer cette erreur avec :
-
 https://stackoverflow.com/questions/41994485/error-could-not-find-or-load-the-qt-platform-plugin-windows-while-using-matplo
 
 
