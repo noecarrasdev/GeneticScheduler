@@ -35,3 +35,24 @@ vous aurez peut-être un problème pour le lancer dans pycharm a cause d'une
 erreur Qt platform plugin windows, vous pouvez virer cette erreur avec :
 
 https://stackoverflow.com/questions/41994485/error-could-not-find-or-load-the-qt-platform-plugin-windows-while-using-matplo
+
+
+________ Explication rapide du code
+
+STRUCTURE :
+dossier général contenant :
+    le .gitignore, README, et la todolist
+    dossier graphs :
+        les graphs au format JSON
+    dossier code :
+        analysis : analyse des résultats (statistiques, évolution des performances au cours des époques
+        data_loading : fonction pour avoir le temps optimal et charger le code
+        initialisation : individus initiaux
+        main : appel à toutes les fonctions pour executer l'algorithme général avec les paramètres spécifiés
+        ordre : classe Ordre + fonction associées (mutations, croisements, légalité, fonction de cout, selection...) --> séparer en plusieurs modules ?
+        printgraph : pour visualiser les graphs et les ordres choisis
+        task : classe tâche
+        time_personalized : classe temps et fonctions associées
+
+APPELS :
+Dans la fonction main, choisissez le graph voulu, les paramètres voulus et lancez le script
