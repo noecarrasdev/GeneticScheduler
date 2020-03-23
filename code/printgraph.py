@@ -46,7 +46,7 @@ def add_connections(tasks_dict, G):
 
 # TEST LAUNCH
 
-testLaunch = True
+testLaunch = False
 
 # TESTS
 
@@ -57,8 +57,6 @@ if testLaunch:
     tasks_dict = dtld.loadTasks(path_graph)
     keys = sorted(tasks_dict.keys())
     ranges = list(range(keys[0], keys[0] + len(tasks_dict)))
-    print(keys, '\n')
-    print(ranges, '\n')
     for i in ranges:
         if i not in keys:
             print(f'{i} is not in tasks keys')

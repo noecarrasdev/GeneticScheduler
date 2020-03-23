@@ -6,8 +6,9 @@ TODO : améliorer le CpuOrder pour compresser les blancs ?
 TODO : implémenter d'autres selections, d'autres types de crossovers (autre type comme le groupe 2 ou bien juste notre type mais avec plus que 2 parents)
 TODO : mutations adaptatives ? force des mutations s'adapte selon la vitesse de convergence (augmente si le best converge bcp)
 TODO : monitorer les temps d'execution
-TODO : change the data structure of the ordre --> reference to a dict with the ID key ? or just transform the code completely to have the ordre be a simple list or array
+TODO : change the data structure of the ordre --> transform the code completely to have the ordre be a simple list or array, timetask a number.
 TODO : garder des individus moins bons pour faire des croisements et des mutations (sortir des optimum locaux)
+TODO : problème avec la chaine ?
 
 
 ________ VISUALISATION
@@ -29,7 +30,7 @@ TODO : regarder avec le temps mis en absolu par les ordres pour voir combien de 
 
 ________ INFORMATION
 
-TODO : clean presentation for next week
+TODO : clean presentation for friday
 
 
 ________ CLOUD AND PARALLELISATION

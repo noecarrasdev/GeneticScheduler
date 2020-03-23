@@ -38,51 +38,58 @@ class Ordre:
             message = 'error'
         return message
 
-    def waitingTime(self, CpuOrder, task, N):
+    def newTime(self, cpuord, times, task, minCore, n_cores):
         '''
-        :param CpuOrder: an order of tasks in the CPU
-        :param task: next Task to add
-        :param N: number of cores
-        :return: TaskTime of the time needed to wait to place the new task
+        :params: from CPUScheduling
+        :return: the TimeTask object of when to start the new task
         '''
-        listDep = task.dependence
-        maxTime = time_personalized.TimeTask(0, 0, 0, 0)
-        for i in range(0, N):
-            # first task of a core
-            if not CpuOrder[i]:
-                timeAc = time_personalized.TimeTask(0, 0, 0, 0)
-            else:
-                other_task = CpuOrder[i][-1]
-                # the other task is a dependency
-                if other_task[0].ID in listDep:
-                    timeAc = other_task[0].time
-                # it isn't
-                else:
-                    timeAc = time_personalized.TimeTask(0, 0, 0, 0)
-            if maxTime.isSmaller(timeAc):
-                maxTime = timeAc
-        return maxTime
+        max_time = time_personalized.TimeTask(0,0,0,0)
+        if n_cores == 1:
+            return max_time
+        for i_core in range(n_cores):
+            if i_core != minCore:
+                if times[minCore].isSmaller(times[i_core]):
+                    print(cpuord[i_core][-1][0].ID)
+                    print(task.dependence)
+                    if cpuord[i_core][-1][0].ID in task.dependence:
+                        new_time = cpuord[i_core][-1][0].time.add(cpuord[i_core][-1][1])
+                        if max_time.isSmaller(new_time):
+                            max_time = new_time
+        return max_time
 
-    def CPUScheduling(self, N):
+    def CPUScheduling(self, n_cores, verbose=False):
         '''
         gives the order of the tasks in the CPU and the time taken to compute everything
         :return: 2 things :
         - total computational time (:type: TaskTime)
         - scheduling of the tasks (:type: [N * [[task, beginTime], [task, beginTime], ...] ])
         '''
-        CpuOrder = [[] for _ in range(0, N)]
-        times = [time_personalized.TimeTask(0, 0, 0, 0) for _ in range(0, N)]
+        CpuOrder = [[] for _ in range(0, n_cores)]
+        times = [time_personalized.TimeTask(0, 0, 0, 0) for _ in range(0, n_cores)]
 
         for task in self.ordre:
+            if verbose:
+                print(f'for the task {task.ID}, the times are : ')
+                for i in range(len(times)):
+                    print(f'core {i} is at time : ', times[i])
+
             # finding the core with the smallest time
             minCore = time_personalized.argmini(times)
 
             # find until when to wait on this core (resolve the Dependancies)
-            beginTime = times[minCore].add(self.waitingTime(CpuOrder, task, N))
+            beginTime = self.newTime(CpuOrder, times, task, minCore, n_cores)
 
             # updates the informations to continue with next tasks
             CpuOrder[minCore].append([task, beginTime])
+            if verbose:
+                print('for this task, the time taken is : ', task.time)
             times[minCore] = beginTime.add(task.time)
+
+            if verbose:
+                print(f'after the execution on this task, we are at : ')
+                for i in range(len(times)):
+                    print(f'core {i} is at time : ', times[i])
+                print('\n')
 
         return time_personalized.maxTime(times), CpuOrder
 

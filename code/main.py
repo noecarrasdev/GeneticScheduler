@@ -14,21 +14,21 @@ from copy import deepcopy
 
 # graph to use
 data_folder = Path("../graphs")
-path_graph = data_folder / "mediumComplex.json"
+path_graph = data_folder / "smallChain.json"
 # sizes
-n_population = 50
-n_cores = 8
+n_population = 10
+n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
 n_selected = 10
-n_mutated = 25
-n_crossed = 15
+n_mutated = 0
+n_crossed = 0
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
-mutations_prob = 0.6
-nb_mut_max = 200
+mutations_prob = 0
+nb_mut_max = 2
 crossover_bloc_size = (10, 500) # must be inferior to n_tasks
 # execution
-epochs = 10
+epochs = 1
 # logs during the execution?
 verbose = True
 time_analytics = True
@@ -116,7 +116,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 
 # START ALGO
 
-best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, plane_graph_displaying=plane_graph_displaying, blank_analysis=blank_analysis)
+# best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, plane_graph_displaying=plane_graph_displaying, blank_analysis=blank_analysis)
 
 
 # LARGER TESTS
@@ -233,3 +233,27 @@ def test_init_loss():
         time_curr, Cpu_curr = ind.CPUScheduling(n_cores)
         scores.append(n_cores * time_personalized.metric_ratio(time_curr, optimal_time))
     print(scores)
+
+
+def testChain():
+    # graph to use
+    data_folder = Path("../graphs")
+    path_graph = data_folder / "smallChain.json"
+
+    # load datas
+    tasks_dict = dtld.loadTasks(path_graph)
+    n_tasks = len(tasks_dict)
+    optimal_time = dtld.ideal_time(tasks_dict)
+
+    # initial population
+    ind1 = initialisation.initialisation_rand(tasks_dict)
+    #print(ind1)
+    ind2 = ordre.Ordre(np.array([tasks_dict[i] for i in range(1, 5)]))
+    print(ind2)
+    time_taken, cpuord = ind2.CPUScheduling(4)
+    print(cpuord)
+    ordre.print_cpuord(cpuord)
+    print(time_taken)
+
+
+testChain()
