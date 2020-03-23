@@ -4,6 +4,7 @@ import time_personalized
 import ordre
 import data_loading as dtld
 from pathlib import Path
+from copy import deepcopy
 
 
 # CODE
@@ -14,7 +15,8 @@ def initialisation_rand(graph):
     :return: a valid combination
     '''
     # initial lists
-    n = len(graph)
+    graph_copy = deepcopy(graph)
+    n = len(graph_copy)
     res = []
     frontier = []
 
@@ -22,7 +24,7 @@ def initialisation_rand(graph):
     # nb : graphs starts at 0 so in the position [0] we place a None marker
     task_dependencies = [None]
     for i in range(1, n + 1):
-        task_dependencies.append(graph[i].dependence)
+        task_dependencies.append(graph_copy[i].dependence)
 
     # gives tasks depending of the current task
     task_todepend = [[] for i in range(n + 1)]
@@ -46,7 +48,7 @@ def initialisation_rand(graph):
                 frontier.append(enfant)
 
     # transform res into an Ordre object
-    res_ordre = ordre.Ordre(np.array([graph[i] for i in res]))
+    res_ordre = ordre.Ordre(np.array([graph_copy[i] for i in res]))
 
     if res_ordre.isLegal(n):
         return res_ordre
@@ -62,8 +64,9 @@ def population_initiale(graph, nombre):
     :return: a list of valid Ordre objects
     '''
     population = []
-    for i in range(nombre):
-        population.append(initialisation_rand(graph))
+    for _ in range(nombre):
+        graph_copy = deepcopy(graph)
+        population.append(initialisation_rand(graph_copy))
     return population
 
 
