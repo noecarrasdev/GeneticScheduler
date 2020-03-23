@@ -86,7 +86,6 @@ class Ordre:
 
         return time_personalized.maxTime(times), CpuOrder
 
-
     def mutation_in_place(self):
         '''
         randomly mutates on 1 task in this Ordre
@@ -306,7 +305,7 @@ def population_eval(pop, n_cores, optimal):
     '''
     scores = []
     for ind in pop:
-        scores.append(n_cores*time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
+        scores.append(-1 + n_cores*time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
     return scores
 
 

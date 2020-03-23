@@ -12,8 +12,21 @@ def loadTasks(doc):
     with open(doc) as f:
         data = json.load(f)
         for key, value in data["nodes"].items():
-            tasks[int(key)] = task.Task(int(key), time_personalized.getTimeFromData(value["Data"]), value["Dependencies"])
+            tasks[int(key)] = task.Task(int(key), time_personalized.getTimeFromData(value["Data"]),
+                                        value["Dependencies"])
+    # this is useful to take the complex graphs that starts with ID greater than 1 and bring them back to the same scheme as the Random.json graphs.
+    keys = sorted(tasks.keys())
+    first = keys[0]
+    if first != 1:
+        for key in keys:
+            tasks[key + 1 - first] = tasks[key]
+            newdep = []
+            for dep in tasks[key + 1 - first].dependence:
+                newdep.append(dep - first + 1)
+            tasks[key + 1 - first].dependence = newdep
+            del tasks[key]
     return tasks
+
 
 def ideal_time(dict):
     '''

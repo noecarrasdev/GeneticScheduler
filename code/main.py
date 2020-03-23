@@ -7,32 +7,41 @@ import time_personalized
 from pathlib import Path
 import analysis
 import printgraph
+from copy import deepcopy
 
 
 # PARAMETERS
 
 # graph to use
 data_folder = Path("../graphs")
-path_graph = data_folder / "mediumRandom.json"
+path_graph = data_folder / "mediumComplex.json"
 # sizes
-n_population = 100
-n_cores = 4
+n_population = 50
+n_cores = 8
 # generation : sum must be equal to n_population
-n_selected = 40          # number of individuals kept during the selection
-n_mutated = 40
-n_crossed = 20
-# genetics
-mutations_prob = 0.2
-nb_mut_max = 15
-crossover_bloc_size = (100, 300) # must be inferior to n_tasks
-# other with crossovers ?
+# n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
+n_selected = 10
+n_mutated = 25
+n_crossed = 15
+# genetics --> adapt the blocs size and the mutation numbers to the number of tasks
+mutations_prob = 0.6
+nb_mut_max = 200
+crossover_bloc_size = (10, 500) # must be inferior to n_tasks
 # execution
-epochs = 3
+epochs = 10
+# logs during the execution?
+verbose = True
+time_analytics = True
+plane_graph_displaying = True
+blank_analysis = False
 
 
 # MAIN CODE
 
-def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, analytics=True):
+def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, time_analytics=True, plane_graph_displaying=True, blank_analysis=True):
+    '''
+    Main call function that starts the genetic algorithm
+    '''
     # load datas
     tasks_dict = dtld.loadTasks(path_graph)
     n_tasks = len(tasks_dict)
@@ -42,7 +51,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     population = initialisation.population_initiale(tasks_dict, n_population)
     scores = ordre.population_eval(population, n_cores, optimal_time)
 
-    # analytics
+    # time_analytics
     ana_ordres = []
     ana_scores = []
     ana_means = []
@@ -51,7 +60,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     for epoch in range(epochs):
         new_pop = []
         if verbose:
-            print(f'\n\n_________________________epoch n°{epoch}__________________________\n')
+            print(f'\n_________________________epoch n°{epoch}__________________________')
         # selection of the bests
         if verbose:
             best_ordres = ordre.selection_nbest(population, n_selected, scores, verbose=True)
@@ -61,7 +70,9 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         mutated_ordres = []
         for i in range(n_mutated):
             add_index = np.random.randint(0, n_selected, 1)[0]
-            mutated_ordres.append(best_ordres[add_index])
+            # deepcopy is important because this mutation happends in place, so without this, the default shallow copy
+            # would mutate the best_ordres also. with this, we're sure that with each iteration we're getting better
+            mutated_ordres.append(deepcopy(best_ordres[add_index]))
         ordre.mutation_pop(mutated_ordres, mutations_prob, nb_mut_max)
         # crossovers
         cross_ordres = []
@@ -72,39 +83,40 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         # evaluations
         population = best_ordres + mutated_ordres + cross_ordres
         scores = ordre.population_eval(population, n_cores, optimal_time)
-        # analytics
-        if analytics:
+        # time_analytics
+        if time_analytics:
             ana_ordres.append(best_ordres[0].ordre)
             ana_scores.append(scores[0])
             ana_means.append(ordre.mean(scores))
 
     # log results to the console
     bar = '\n_________________________________________________________________'
-    print('\n' + bar + '\n_______________________________RESULTS_______________________________\n')
+    print('\n' + bar + '\n_______________________________RESULTS_______________________________' + bar + '\n')
     best_result = ordre.selection_nbest(population, 1, scores)[0]
     #print(best_result)
-    print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores, optimal_time))
+    print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores, optimal_time)[0])
     print(bar + '\n\n')
 
-    # analytics score printing
-    if analysis:
+    # time_analytics score printing
+    if time_analytics:
         analysis.performance_evaluation(ana_scores, ana_means)
 
     # graph displaying (initial + a chaque époque (figure avec onglets en mode diapo ? tkinter ?)
 
     # blanks analysis
-    if analysis:
+    if blank_analysis:
         analysis.blank_analysis(best_result.CPUScheduling(n_cores)[1])
 
     # graph printing
-    printgraph.print_plane_graph(tasks_dict)
+    if plane_graph_displaying:
+        printgraph.print_plane_graph(tasks_dict)
 
     return best_result
 
 
 # START ALGO
 
-best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs)
+best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, plane_graph_displaying=plane_graph_displaying, blank_analysis=blank_analysis)
 
 
 # LARGER TESTS
