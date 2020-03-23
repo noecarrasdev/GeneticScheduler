@@ -14,31 +14,32 @@ from copy import deepcopy
 
 # graph to use
 data_folder = Path("../graphs")
-path_graph = data_folder / "smallChain.json"
+path_graph = data_folder / "mediumComplex.json"
 # sizes
-n_population = 10
+n_population = 50
 n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
-n_selected = 10
-n_mutated = 0
-n_crossed = 0
+n_selected = 15
+n_mutated = 25
+n_crossed = 10
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
-mutations_prob = 0
-nb_mut_max = 2
+mutations_prob = 0.6
+nb_mut_max = 200
 crossover_bloc_size = (10, 500) # must be inferior to n_tasks
 # execution
-epochs = 1
+epochs = 10
 # logs during the execution?
 verbose = True
 time_analytics = True
 plane_graph_displaying = True
 blank_analysis = False
+verify_legality = False
 
 
 # MAIN CODE
 
-def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, time_analytics=True, plane_graph_displaying=True, blank_analysis=True):
+def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, time_analytics=True, plane_graph_displaying=True, blank_analysis=True, verify_legality=False):
     '''
     Main call function that starts the genetic algorithm
     '''
@@ -73,7 +74,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
             # deepcopy is important because this mutation happends in place, so without this, the default shallow copy
             # would mutate the best_ordres also. with this, we're sure that with each iteration we're getting better
             mutated_ordres.append(deepcopy(best_ordres[add_index]))
-        ordre.mutation_pop(mutated_ordres, mutations_prob, nb_mut_max)
+        ordre.mutation_pop(mutated_ordres, mutation_prob, nb_mut_max)
         # crossovers
         cross_ordres = []
         for i in range(n_crossed):
@@ -82,6 +83,10 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
             cross_ordres.append(ordre.crossover_2_parents(best_ordres[parents[0]], best_ordres[parents[1]], bloc_size))
         # evaluations
         population = best_ordres + mutated_ordres + cross_ordres
+        if verify_legality:
+            for ind in population:
+                if not ind.isLegal(n_tasks):
+                    return f'ERROR !!! illegal order thrown at ' + str(ind)
         scores = ordre.population_eval(population, n_cores, optimal_time)
         # time_analytics
         if time_analytics:
@@ -116,7 +121,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 
 # START ALGO
 
-# best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, plane_graph_displaying=plane_graph_displaying, blank_analysis=blank_analysis)
+best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, plane_graph_displaying=plane_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality)
 
 
 # LARGER TESTS
@@ -250,10 +255,7 @@ def testChain():
     #print(ind1)
     ind2 = ordre.Ordre(np.array([tasks_dict[i] for i in range(1, 5)]))
     print(ind2)
-    time_taken, cpuord = ind2.CPUScheduling(4)
+    time_taken, cpuord = ind2.CPUScheduling(4, verbose=True)
     print(cpuord)
     ordre.print_cpuord(cpuord)
     print(time_taken)
-
-
-testChain()

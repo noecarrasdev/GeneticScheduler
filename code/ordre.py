@@ -43,14 +43,12 @@ class Ordre:
         :params: from CPUScheduling
         :return: the TimeTask object of when to start the new task
         '''
-        max_time = time_personalized.TimeTask(0,0,0,0)
+        max_time = times[minCore]
         if n_cores == 1:
             return max_time
         for i_core in range(n_cores):
             if i_core != minCore:
                 if times[minCore].isSmaller(times[i_core]):
-                    print(cpuord[i_core][-1][0].ID)
-                    print(task.dependence)
                     if cpuord[i_core][-1][0].ID in task.dependence:
                         new_time = cpuord[i_core][-1][0].time.add(cpuord[i_core][-1][1])
                         if max_time.isSmaller(new_time):
@@ -312,8 +310,8 @@ def population_eval(pop, n_cores, optimal):
     '''
     scores = []
     for ind in pop:
-        scores.append(-1 + n_cores*time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
+        scores.append(n_cores*time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
     return scores
 
 
-# TESTS in the main file (requires more than this file only)
+# TESTS in the main file
