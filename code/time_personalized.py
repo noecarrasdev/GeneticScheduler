@@ -90,13 +90,7 @@ def metric_ratio(over, under):
 
 
 # TEST LAUNCH
-
-testLaunch = False
-
-
-# TEST
-
-if testLaunch:
+if __name__ == "__main__":
     time1 = TimeTask(0,1,2,300)
     time2 = TimeTask(1,2,6,700)
     time3 = time1.add(time2)

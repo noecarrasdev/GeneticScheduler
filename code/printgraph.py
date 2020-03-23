@@ -45,12 +45,7 @@ def add_connections(tasks_dict, G):
 
 
 # TEST LAUNCH
-
-testLaunch = False
-
-# TESTS
-
-if testLaunch:
+if __name__ == "__main__":
     # graph to use
     data_folder = Path("../graphs")
     path_graph = data_folder / "persoGraph.json"

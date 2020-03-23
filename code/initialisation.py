@@ -71,13 +71,7 @@ def population_initiale(graph, nombre):
 
 
 # TEST LAUNCH
-
-testLaunch = False
-
-
-# TESTS
-
-if testLaunch:
+if __name__ == "__main__":
     # graph to use
     data_folder = Path("../graphs")
     path_graph = data_folder / "smallRandom.json"

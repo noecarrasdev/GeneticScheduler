@@ -52,13 +52,7 @@ def blank_analysis(cpuord):
 
 
 # TEST LAUNCH
-
-testLaunch = False
-
-
-# TESTS
-
-if testLaunch:
+if __name__ == "__main__":
     scores = [1.01, 1.001, 1.0001, 1.000079]
     means = [1.02, 1.027, 1.00065, 1.00025]
     performance_evaluation(scores, means)

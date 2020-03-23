@@ -16,13 +16,7 @@ class Task:
 
 
 # TEST LAUNCH
-
-testLaunch = False
-
-
-# TEST
-
-if testLaunch:
+if __name__ == "__main__":
     task1 = Task(1, tmpz.TimeTask(1, 3, 6, 18), [])
     print(task1)
     # see if it throws an error

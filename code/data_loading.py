@@ -40,11 +40,7 @@ def ideal_time(dict):
 
 
 # TEST LAUNCH
-testLaunch = False
-
-
-# TEST
-if testLaunch:
+if __name__ == "__main__":
     document = '../graphs/smallRandom.json'
     tasksDict = loadTasks(document)
     print(tasksDict)
