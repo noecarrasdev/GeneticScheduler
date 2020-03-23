@@ -16,6 +16,7 @@ def initialisation_rand(graph):
     '''
     # initial lists
     graph_copy = deepcopy(graph)
+    graph_copy2 = deepcopy(graph)
     n = len(graph_copy)
     res = []
     frontier = []
@@ -48,7 +49,7 @@ def initialisation_rand(graph):
                 frontier.append(enfant)
 
     # transform res into an Ordre object
-    res_ordre = ordre.Ordre(np.array([graph_copy[i] for i in res]))
+    res_ordre = ordre.Ordre(np.array([graph_copy2[i] for i in res]))
 
     if res_ordre.isLegal(n):
         return res_ordre
