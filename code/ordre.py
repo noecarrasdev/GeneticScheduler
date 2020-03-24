@@ -8,7 +8,7 @@ from mpi4py import MPI
 
 # CODE
 
-comm = MPI.COMM_WORLD
+Comm = MPI.COMM_WORLD
 size = comm.Get_size() 
 rank = comm.Get_rank()
 
@@ -285,7 +285,7 @@ def selection_nbest(population, n, scores, verbose=False):
 
     return best_elements
 
-    def selection_mpi(population,n, verbose=False):
+def selection_mpi(population,n, verbose=False):
         n_pop=len(population)
         if n > n_pop:
             return 'error : you tried to select more nodes that there is in the population'
@@ -305,9 +305,9 @@ def selection_nbest(population, n, scores, verbose=False):
             sendbuf = selection_nbest(recvbuf,n_send) #do selection on all smaller arrays
         if rank == 0 :
             recvbuf = np.empty(n_send*size, dtype='d')
-        comm.Gather(sendbuf,recvbuf,)
+        Comm.Gather(sendbuf,recvbuf,) #gathers all small arrays in one big array 
         if rank == 0 :
-            return(selection_,nbest(recvbuf,n))
+            return(selection_nbest(recvbuf,n))
 
 
 
