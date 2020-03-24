@@ -20,8 +20,13 @@ def loadTasks(doc):
     if first != 1:
         for key in keys:
             tasks[key + 1 - first] = tasks[key]
+            tasks[key + 1 - first].ID -= (first - 1)
             newdep = []
             for dep in tasks[key + 1 - first].dependence:
+                if dep < first:
+                    print('JSON error key too small')
+                if dep > len(tasks) + first:
+                    print('JSON error key too large')
                 newdep.append(dep - first + 1)
             tasks[key + 1 - first].dependence = newdep
             del tasks[key]
@@ -41,9 +46,19 @@ def ideal_time(dict):
 
 # TEST LAUNCH
 if __name__ == "__main__":
-    document = '../graphs/smallRandom.json'
+    document = '../graphs/largeComplex.json'
     tasksDict = loadTasks(document)
+    n = len(tasksDict)
+    '''
+    for i in range(1, n + 1):
+        print(f'individual {i} with ', tasksDict[i].time, ' and dep : ', tasksDict[i].dependence, '\n')
     print(tasksDict)
     total_max = ideal_time(tasksDict)
     print(total_max)
-    # see if it gets an error or an unusual object
+    '''
+    for i in range(1, n + 1):
+        try:
+            foo = tasksDict[i]
+            print(tasksDict[i])
+        except:
+            print(f'problem at {i}')

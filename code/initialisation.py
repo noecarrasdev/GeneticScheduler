@@ -9,15 +9,13 @@ from copy import deepcopy
 
 # CODE
 
-def initialisation_rand(graph):
+def initialisation_rand(graph, verbose=False):
     '''
     :param graph: dict of tasks indeed by integers corresponding to the task.ID attribute
     :return: a valid combination
     '''
     # initial lists
-    graph_copy = deepcopy(graph)
-    graph_copy2 = deepcopy(graph)
-    n = len(graph_copy)
+    n = len(graph.keys())
     res = []
     frontier = []
 
@@ -25,7 +23,7 @@ def initialisation_rand(graph):
     # nb : graphs starts at 0 so in the position [0] we place a None marker
     task_dependencies = [None]
     for i in range(1, n + 1):
-        task_dependencies.append(graph_copy[i].dependence)
+        task_dependencies.append(deepcopy(graph[i].dependence))
 
     # gives tasks depending of the current task
     task_todepend = [[] for i in range(n + 1)]
@@ -33,23 +31,62 @@ def initialisation_rand(graph):
         for dep in task_dependencies[i]:
             task_todepend[dep].append(i)
 
+    # monitor
+    if verbose:
+        print(f'\nInitial lists')
+        for i in range(n + 1):
+            print(f'individual {i}')
+            print(f'backwards dependences : {task_dependencies[i]}')
+            print(f'foward dependences : {task_todepend[i]}')
+
     # creation de la frontière
     for i in range(1, len(task_dependencies)):
         if not task_dependencies[i]:
             frontier.append(i)
 
+    # monitor
+    if verbose:
+        print('\ninitial fronier is : ')
+        for x in frontier:
+            print(f'task {graph[x].ID}')
+
     # ajout progressif des enfants
+    if verbose:
+        print('\nThe main initialization loop begins')
     while len(res) < n:
         random_task = np.random.choice(frontier, 1)[0]
+
+        if verbose:
+            print(f'\ntask {random_task} is selected, its left dependencies are : {task_dependencies[random_task]}')
+
         res.append(random_task)
         frontier.remove(random_task)
+
+        if verbose:
+            print(f'the current value of the solution is : {res}')
+            print(f'removing dependencies from the {len(task_todepend[random_task])} childs')
+
         for enfant in task_todepend[random_task]:
             task_dependencies[enfant].remove(random_task)
             if not task_dependencies[enfant]:
                 frontier.append(enfant)
 
+                if verbose:
+                    print(f'the child {enfant} has {task_dependencies[enfant]} dependencies left so it is added to the frontier')
+
+    if verbose:
+        print('\n\n\n')
+
     # transform res into an Ordre object
-    res_ordre = ordre.Ordre(np.array([graph_copy2[i] for i in res]))
+    res_ordre = ordre.Ordre(np.array([graph[i] for i in res]))
+    if verbose:
+        for i in range(n):
+            print(f'res list has {res[i]} and ordre has {res_ordre.ordre[i].ID}, the difference being : {res_ordre.ordre[i].ID - res[i]}')
+
+
+    if verbose:
+        print(f'\n\nthe result is : {res_ordre}')
+        print('result is legal ? : ', res_ordre.isLegal(len(tasks_dict)))
 
     if res_ordre.isLegal(n):
         return res_ordre
@@ -66,25 +103,24 @@ def population_initiale(graph, nombre):
     '''
     population = []
     for _ in range(nombre):
-        graph_copy = deepcopy(graph)
-        population.append(initialisation_rand(graph_copy))
+        population.append(initialisation_rand(graph))
     return population
 
 
 # TEST LAUNCH
+
 if __name__ == "__main__":
     # graph to use
     data_folder = Path("../graphs")
-    path_graph = data_folder / "smallRandom.json"
+    path_graph = data_folder / "mediumComplex.json"
 
     # Load the tasks
     tasks_dict = dtld.loadTasks(path_graph)
 
     # real initialisation
-    first_list = initialisation_rand(tasks_dict)
-    print('result is : ', first_list, ', legal ? : ', first_list.isLegal(len(tasks_dict)))
+    first_ordre = initialisation_rand(tasks_dict)
 
     # batch initialisation
     pop_test = population_initiale(tasks_dict, 10)
     for i in range(10):
-        print(pop_test[i], pop_test[i].isLegal(10))
+        print(pop_test[i].isLegal(len(tasks_dict)))

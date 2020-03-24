@@ -2,6 +2,7 @@ import numpy as np
 from math import ceil
 import time_personalized
 import task
+from copy import deepcopy
 
 
 # CODE
@@ -91,53 +92,55 @@ class Ordre:
 
         return time_personalized.maxTime(times), CpuOrder
 
-    def mutation_in_place(self):
+    def mutation_multiple_out(self, n_mutation, prob_mut, tasks_dict, verbose=False):
         '''
-        randomly mutates on 1 task in this Ordre
-        :return: void
+        returns a mutated individual, works on a simple list with task_dependencies to be easier for the memory
+        :param n_mutation: int, maximum number of mutations
+        :param prob_mut: float, probability than each mutation occurs
+        :param tasks_dict: dict, indexed by int
+        :return:
         '''
-        ind_inf = 0
+        # creating a list that's the image of self.ordre
+        new_seed = []
         n = len(self.ordre)
-        ind_sup = n-1
-        ind_mut = np.random.randint(0, n)
-        task_mut = self.ordre[ind_mut]
-        for k in range(ind_mut):
-            task = self.ordre[k]
-            if int(task.ID) in task_mut.dependence:
-                ind_inf = k + 1
-        for k in range(n - ind_mut - 1):
-            task = self.ordre[n - k - 1]
-            if int(task_mut.ID) in task.dependence:
-                ind_sup = n - k - 2
-        ind_new = ind_mut
-        while ind_new == ind_mut:
-            ind_new = np.random.randint(ind_inf, ind_sup + 1)
-        outordre = np.insert(np.delete(self.ordre, ind_mut), ind_new, task_mut)
-        self.ordre = outordre
-
-    def mutation_out(self):
-        '''
-        randomly mutates on 1 task in this Ordre
-        :return: void
-        '''
-        ind_inf = 0
-        n = len(self.ordre)
-        ind_sup = n-1
-        ind_mut = np.random.randint(0, n)
-        task_mut = self.ordre[ind_mut]
-        for k in range(ind_mut):
-            task = self.ordre[k]
-            if int(task.ID) in task_mut.dependence:
-                ind_inf = k + 1
-        for k in range(n - ind_mut -1):
-            task = self.ordre[n - k - 1]
-            if int(task_mut.ID) in task.dependence:
-                ind_sup = n - k - 2
-        ind_new = ind_mut
-        while ind_new == ind_mut:
-            ind_new = np.random.randint(ind_inf, ind_sup + 1)
-        outordre = Ordre(np.insert(np.delete(self.ordre, ind_mut), ind_new, task_mut))
-        return outordre
+        for i in range(n):
+            new_seed.append(deepcopy(self.ordre[i].ID))
+        # mutate that list
+        if verbose:
+            print('\nFirst seed', new_seed)
+        for i in range(n_mutation):
+            if np.random.uniform() < prob_mut:
+                # The task to move
+                ind_mut = np.random.randint(0, n)
+                task_mut = new_seed[ind_mut]
+                task_dep = tasks_dict[task_mut].dependence
+                # finding borders
+                ind_inf = deepcopy(ind_mut)
+                ind_sup = deepcopy(ind_mut)
+                while ind_inf > 0 and (tasks_dict[new_seed[ind_inf]].ID not in task_dep):
+                    ind_inf -= 1
+                if ind_inf > 0 or (tasks_dict[new_seed[ind_inf]].ID in task_dep):
+                    ind_inf += 1
+                while ind_sup < n and (task_mut not in tasks_dict[new_seed[ind_sup]].dependence):
+                    ind_sup += 1
+                if not (ind_sup < n and (task_mut not in tasks_dict[new_seed[ind_sup]].dependence)):
+                    ind_sup -= 1
+                if verbose:
+                    print(f'ind_mut is {ind_mut}, task is {task_mut}, ind_inf is {ind_inf}, ind_sup is {ind_sup}')
+                # finding inserting index
+                ind_insert = np.random.randint(ind_inf, ind_sup + 1)
+                above = (ind_insert >= ind_mut)
+                # inserting in the list
+                new_seed.insert(ind_insert, task_mut)
+                if above:
+                    new_seed.pop(ind_mut)
+                else:
+                    new_seed.pop(ind_mut + 1)
+                if verbose:
+                    print('after a mutation', new_seed)
+        # use that list to return a new ordre issued from this
+        new_ordre = Ordre(np.array([tasks_dict[i] for i in new_seed]))
+        return new_ordre
 
     def isLegal(self, number_of_tasks):
         '''
@@ -145,28 +148,16 @@ class Ordre:
         :return: Boolean representing if this ordre is valid
         '''
         if len(self.ordre) != number_of_tasks:
+            print('wrong number of tasks')
             return False
         resolved_tasks = []
         for task in self.ordre:
             for dependency in task.dependence:
                 if dependency not in resolved_tasks:
+                    print(f'{task.ID} is wrong because it appears before its dependency {dependency}')
                     return False
             resolved_tasks.append(task.ID)
         return True
-
-
-def mutation_pop(population, prob_mutation, nb_max_mutation):
-    '''
-    :param population: list of Ordre
-    :param prob_mutation: probability that each time an individual mutates
-    :param nb_max_mutation: maximum number of mutation that 1 individual can make
-    :return: void
-    updates to population in place to save space & time
-    '''
-    for k in range(len(population)):
-        for i in range(nb_max_mutation):
-            if np.random.random() < prob_mutation:
-                population[k].mutation_in_place()
 
 
 def crossover_2_parents(parent_ordre1, parent_ordre2, bloc_taille=2):
@@ -197,9 +188,9 @@ def crossover_2_parents(parent_ordre1, parent_ordre2, bloc_taille=2):
 
 def croisement_pop(population, size_block):
     # TODO : améliorer ça...
-    for k in range(len(population)//2):
-        ordre1 = population[2*k]
-        ordre2 = population[2*k+1]
+    for k in range(len(population) // 2):
+        ordre1 = population[2 * k]
+        ordre2 = population[2 * k + 1]
         population.append(crossover_2_parents(ordre1, ordre2, size_block))
 
 
@@ -222,7 +213,7 @@ def print_cpuord(cpuord):
     for i_cpu in range(len(cpuord)):
         for i_task in range(len(cpuord[i_cpu])):
             taskandtime = cpuord[i_cpu][i_task]
-            #print(i_cpu, i_task, taskandtime)
+            # print(i_cpu, i_task, taskandtime)
             try:
                 if (taskandtime and len(taskandtime) == 2):
                     end_list[i_cpu].append((str(taskandtime[0]), str(taskandtime[1])))
@@ -275,7 +266,8 @@ def selection_nbest(population, n, scores, verbose=False):
     if verbose:
         best_scores = [None] * n
 
-    score_ranks = sorted(range(len(scores)), key=lambda i:scores[i]) # indexes of the biggest indexes in decreasing order
+    score_ranks = sorted(range(len(scores)),
+                         key=lambda i: scores[i])  # indexes of the biggest indexes in decreasing order
     best_elements = [None] * n
     for i in range(n):
         best_elements[i] = population[score_ranks[i]]
@@ -287,6 +279,7 @@ def selection_nbest(population, n, scores, verbose=False):
         print('average is : ', mean(best_scores))
 
     return best_elements
+
 
 def mean(L):
     '''
@@ -303,6 +296,7 @@ def mean(L):
         result = 0
     return result
 
+
 def population_eval(pop, n_cores, optimal):
     '''
     :param pop: list of Ordres
@@ -310,8 +304,7 @@ def population_eval(pop, n_cores, optimal):
     '''
     scores = []
     for ind in pop:
-        scores.append(n_cores*time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
+        scores.append(-1 + n_cores * time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
     return scores
-
 
 # TESTS in the main file
