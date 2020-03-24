@@ -9,8 +9,8 @@ from mpi4py import MPI
 # CODE
 
 Comm = MPI.COMM_WORLD
-size = comm.Get_size() 
-rank = comm.Get_rank()
+size = Comm.Get_size() 
+rank = Comm.Get_rank()
 
 class Ordre:
     def __init__(self, ordre):
@@ -305,7 +305,7 @@ def selection_mpi(population,n, verbose=False):
             sendbuf = selection_nbest(recvbuf,n_send) #do selection on all smaller arrays
         if rank == 0 :
             recvbuf = np.empty(n_send*size, dtype='d')
-        Comm.Gather(sendbuf,recvbuf,) #gathers all small arrays in one big array 
+        Comm.Gather(sendbuf,recvbuf,root=0) #gathers all small arrays in one big array 
         if rank == 0 :
             return(selection_nbest(recvbuf,n))
 
