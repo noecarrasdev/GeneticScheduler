@@ -3,9 +3,14 @@ from math import ceil
 import time_personalized
 import task
 from copy import deepcopy
-
+import mpi4py 
+from mpi4py import MPI
 
 # CODE
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size() 
+rank = comm.Get_rank()
 
 class Ordre:
     def __init__(self, ordre):
@@ -279,6 +284,34 @@ def selection_nbest(population, n, scores, verbose=False):
         print('average is : ', mean(best_scores))
 
     return best_elements
+
+    def selection_mpi(population,n, verbose=False):
+        n_pop=len(population)
+        if n > n_pop:
+            return 'error : you tried to select more nodes that there is in the population'
+        data = None 
+        recvbuf = None
+        sendbuf = None
+        sub_size = ceil(n_pop/size)  # size of array that will be sent to different cores
+        n_send = ceil(n/size)
+
+        if rank == 0 :
+            data = population 
+        recvbuf = np.empty(sub_size, dtype='d')
+        if rank != 0 : 
+            recvbuf = np.empty(sub_size, dtype='d')
+        Comm.Scatter(data, recvbuf, root=0) #scatters the original population in smaller ones on the different cores
+        if rank != 0 :
+            sendbuf = selection_nbest(recvbuf,n_send) #do selection on all smaller arrays
+        if rank == 0 :
+            recvbuf = np.empty(n_send*size, dtype='d')
+        comm.Gather(sendbuf,recvbuf,)
+        if rank == 0 :
+            return(selection_,nbest(recvbuf,n))
+
+
+
+
 
 
 def mean(L):
