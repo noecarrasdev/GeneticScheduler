@@ -3,15 +3,15 @@ from math import ceil
 import time_personalized
 import task
 from copy import deepcopy
-import mpi4py 
-from mpi4py import MPI
+#import mpi4py
+#from mpi4py import MPI
 
 # CODE
-
+'''
 Comm = MPI.COMM_WORLD
 size = Comm.Get_size() 
 rank = Comm.Get_rank()
-
+'''
 class Ordre:
     def __init__(self, ordre):
         '''
@@ -285,6 +285,8 @@ def selection_nbest(population, n, scores, verbose=False):
 
     return best_elements
 
+
+'''
 def selection_mpi(population,n, verbose=False):
         n_pop=len(population)
         if n > n_pop:
@@ -308,10 +310,7 @@ def selection_mpi(population,n, verbose=False):
         Comm.Gather(sendbuf,recvbuf,root=0) #gathers all small arrays in one big array 
         if rank == 0 :
             return(selection_nbest(recvbuf,n))
-
-
-
-
+'''
 
 
 def mean(L):

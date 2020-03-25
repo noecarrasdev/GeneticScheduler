@@ -14,21 +14,21 @@ from copy import deepcopy
 
 # graph to use
 data_folder = Path("../graphs")
-path_graph = data_folder / "mediumRandom.json"
+path_graph = data_folder / "smallComplex.json"
 # sizes
-n_population = 100
+n_population = 10
 n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
-n_selected = 25
-n_mutated = 45
-n_crossed = 30
+n_selected = 3
+n_mutated = 4
+n_crossed = 3
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
 mutations_prob = 0.6
 nb_mut_max = 200
 crossover_bloc_size = (20, 200) # must be inferior to n_tasks
 # execution
-epochs = 50
+epochs = 5
 # logs during the execution?
 verbose = True
 time_analytics = True
@@ -104,16 +104,14 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     if time_analytics:
         analysis.performance_evaluation(ana_scores, ana_means)
 
-    # graph displaying (initial + a chaque époque (figure avec onglets en mode diapo ? tkinter ?)
-
     # blanks analysis
     if blank_analysis:
         analysis.blank_analysis(best_result.CPUScheduling(n_cores)[1])
 
     # graph printing
     if plane_graph_displaying:
-        printgraph.print_plane_graph(tasks_dict)
 
+        printgraph.print_color_graph(tasks_dict, best_result)
     return best_result
 
 
