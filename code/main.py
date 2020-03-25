@@ -7,7 +7,6 @@ import time_personalized
 from pathlib import Path
 import analysis
 import printgraph
-from copy import deepcopy
 
 
 # PARAMETERS
@@ -31,15 +30,16 @@ crossover_bloc_size = (20, 200) # must be inferior to n_tasks
 epochs = 5
 # logs during the execution?
 verbose = True
-time_analytics = True
-plane_graph_displaying = True
+time_analytics = False
+colored_graph_displaying = False
 blank_analysis = False
-verify_legality = True
+verify_legality = False
+graph_evolution = True
 
 
 # MAIN CODE
 
-def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, time_analytics=True, plane_graph_displaying=True, blank_analysis=True, verify_legality=False):
+def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutation_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=True, time_analytics=True, colored_graph_displaying=True, blank_analysis=True, verify_legality=False, graph_evolution=False):
     '''
     Main call function that starts the genetic algorithm
     '''
@@ -57,9 +57,11 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     ana_scores = []
     ana_means = []
 
+    # graph evolution
+    graph_evo_best = []
+
     # execution
     for epoch in range(epochs):
-        new_pop = []
         if verbose:
             print(f'\n_________________________epoch n°{epoch}__________________________')
         # selection of the bests
@@ -67,6 +69,8 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
             best_ordres = ordre.selection_nbest(population, n_selected, scores, verbose=True)
         else:
             best_ordres = ordre.selection_nbest(population, n_selected, scores)
+        if graph_evolution:
+            graph_evo_best.append(best_ordres[0])
         # mutations
         mutated_ordres = []
         for i in range(n_mutated):
@@ -109,15 +113,20 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         analysis.blank_analysis(best_result.CPUScheduling(n_cores)[1])
 
     # graph printing
-    if plane_graph_displaying:
-
+    if colored_graph_displaying:
         printgraph.print_color_graph(tasks_dict, best_result)
+
+    # graph evolution
+    if graph_evolution:
+        pos = printgraph.getpos(tasks_dict)
+        for i in range(epochs):
+            printgraph.print_color_graph(tasks_dict, graph_evo_best[i], pos=pos, title=f'best at epoch {i}')
     return best_result
 
 
 # START ALGO
 
-best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, plane_graph_displaying=plane_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality)
+best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, colored_graph_displaying=colored_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality, graph_evolution=graph_evolution)
 
 
 # LARGER TESTS
