@@ -7,34 +7,35 @@ import time_personalized
 from pathlib import Path
 import analysis
 import printgraph
+from time import time
 
 
 # PARAMETERS
 
 # graph to use
 data_folder = Path("../graphs")
-path_graph = data_folder / "smallComplex.json"
+path_graph = data_folder / "mediumComplex.json"
 # sizes
-n_population = 10
+n_population = 100
 n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
-n_selected = 3
-n_mutated = 4
-n_crossed = 3
+n_selected = 20
+n_mutated = 20
+n_crossed = 15
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
 mutations_prob = 0.6
 nb_mut_max = 200
 crossover_bloc_size = (20, 200) # must be inferior to n_tasks
 # execution
-epochs = 5
+epochs = 50
 # logs during the execution?
 verbose = True
 time_analytics = False
 colored_graph_displaying = False
 blank_analysis = False
 verify_legality = False
-graph_evolution = True
+graph_evolution = False
 
 
 # MAIN CODE
@@ -125,9 +126,10 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 
 
 # START ALGO
-
+start_time = time()
 best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, colored_graph_displaying=colored_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality, graph_evolution=graph_evolution)
-
+end_time = time()
+print('Total Time : {0} s'.format(end_time-start_time))
 
 # LARGER TESTS
 
