@@ -125,11 +125,12 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     return best_result
 
 
-# START ALGO
-start_time = time()
-best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, colored_graph_displaying=colored_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality, graph_evolution=graph_evolution)
-end_time = time()
-print('Total Time : {0} s'.format(end_time-start_time))
+if __name__ == "__main__" :
+    # START ALGO
+    start_time = time()
+    best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, colored_graph_displaying=colored_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality, graph_evolution=graph_evolution)
+    end_time = time()
+    print('Total Time : {0} s'.format(end_time-start_time))
 
 # LARGER TESTS
 
