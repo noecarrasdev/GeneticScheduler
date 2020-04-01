@@ -1,2 +1,8 @@
 mpi4py==3.0.3
 azure-storage==0.36.0
+numpy
+matplotlib
+json
+time
+copy
+networkx
