@@ -65,7 +65,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # execution
     for epoch in range(epochs):
         if verbose:
-            print(f'\n_________________________epoch n°{epoch}__________________________')
+            print(f'\n_________________________epoch n{epoch}__________________________')
         # selection of the bests
         if verbose:
             best_ordres = ordre.selection_nbest(population, n_selected, scores, verbose=True)
