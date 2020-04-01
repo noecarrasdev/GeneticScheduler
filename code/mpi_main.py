@@ -84,7 +84,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # execution
     for epoch in range(epochs):
         if verbose and Me==0:
-            print(f'\n_________________________epoch n°{epoch}__________________________')
+            print(f'\n_________________________epoch n{epoch}__________________________')
         # selection of the bests
         best_ordres = selection_nbest_mpi(population, n_selected, scores, verbose=verbose)
 
@@ -149,7 +149,8 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 
 
 # graph to use
-data_folder = Path("../graphs")
+#data_folder = Path("../graphs")
+data_folder = Path("/mnt/batch/tasks/shared/GeneticScheduler/graphs") # for Azure
 path_graph = data_folder / "mediumComplex.json"
 # sizes
 n_population = 100
@@ -180,10 +181,11 @@ if verbose:
     print("Initialization of process ",Me,"/",NbP)
 comm.Barrier()
 
-# START ALGO
-if Me == 0:
-    start_time = time()
-best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, colored_graph_displaying=colored_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality, graph_evolution=graph_evolution)
-if Me == 0:
-    end_time = time()
-    print('Total Time : {0} s'.format(end_time-start_time))
+if __name__ == "__main__" :
+    # START ALGO
+    if Me == 0:
+        start_time = time()
+    best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob, nb_mut_max, crossover_bloc_size, epochs, verbose=verbose, time_analytics=time_analytics, colored_graph_displaying=colored_graph_displaying, blank_analysis=blank_analysis, verify_legality=verify_legality, graph_evolution=graph_evolution)
+    if Me == 0:
+        end_time = time()
+        print('Total Time : {0} s'.format(end_time-start_time))
