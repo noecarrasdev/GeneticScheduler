@@ -91,7 +91,7 @@ def print_color_graph(tasks_dict, ordreprint, label=False, pos=None, title=None)
         ordre_attr = ordreprint.ordre
         n = len(ordre_attr)
         for i in range(n):
-            listprint.append(ordre_attr[i].ID)
+            listprint.append(ordre_attr[i])
 
     # REVERSE THE ORDER TO CREATE THE GRAPH
     # listrev[i] for i in the initial task ranks (issued from the source JSON)

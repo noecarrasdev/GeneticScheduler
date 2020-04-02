@@ -72,27 +72,29 @@ def initialisation_rand(tasks_dict, verbose=False):
                 frontier.append(enfant)
 
                 if verbose:
-                    print(f'the child {enfant} has {task_dependencies[enfant]} dependencies left so it is added to the frontier')
+                    print(
+                        f'the child {enfant} has {task_dependencies[enfant]} dependencies left so it is added to the frontier')
 
     if verbose:
         print('\n\n\n')
 
     # transform res into an Ordre object
-    res_ordre = ordre.Ordre(np.array([tasks_dict[i] for i in res]))
+    res_ordre = ordre.Ordre(np.array(res))
     if verbose:
         for i in range(n):
-            print(f'res list has {res[i]} and ordre has {res_ordre.ordre[i]}, the difference being : {res_ordre.ordre[i] - res[i]}')
-
+            print(
+                f'res list has {res[i]} and ordre has {res_ordre.ordre[i]}, the difference being : {res_ordre.ordre[i] - res[i]}')
 
     if verbose:
         print(f'\n\nthe result is : {res_ordre}')
-        print('result is legal ? : ', res_ordre.isLegal(len(tasks_dict)))
+        print('result is legal ? : ', res_ordre.isLegal(tasks_dict, len(tasks_dict)))
 
-    if res_ordre.isLegal(n):
+    if res_ordre.isLegal(tasks_dict, n):
         return res_ordre
     else:
         print('non-legal child')
         return None
+
 
 
 def population_initiale(tasks_dict, nombre):
@@ -102,7 +104,7 @@ def population_initiale(tasks_dict, nombre):
     :return: a list of valid Ordre objects
     '''
     population = []
-    for _ in range(nombre):
+    for i in range(nombre):
         population.append(initialisation_rand(tasks_dict))
     return population
 

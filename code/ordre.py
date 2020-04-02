@@ -39,7 +39,7 @@ class Ordre:
             message = 'error'
         return message
 
-    def newTime(self, tasks_dict, cpuord, times, task, minCore, n_cores):
+    def newTime(self, cpuord, tasks_dict, times, task, minCore, n_cores):
         '''
         :params: from CPUScheduling
         :return: the TimeTask object of when to start the new task
@@ -108,7 +108,7 @@ class Ordre:
         new_seed = []
         n = len(self.ordre)
         for i in range(n):
-            new_seed.append(deepcopy(self.ordre[i].ID))
+            new_seed.append(deepcopy(self.ordre[i]))
         # mutate that list
         if verbose:
             print('\nFirst seed', new_seed)
@@ -290,14 +290,14 @@ def mean(L):
     return result
 
 
-def population_eval(pop, n_cores, optimal):
+def population_eval(pop, n_cores, tasks_dict, optimal):
     '''
     :param pop: list of Ordres
     :return: list of scores (corresponding to the ordres with the same indexes)
     '''
     scores = []
     for ind in pop:
-        scores.append(-1 + n_cores * time_personalized.metric_ratio(ind.CPUScheduling(n_cores)[0], optimal))
+        scores.append(-1 + n_cores * time_personalized.metric_ratio(ind.CPUScheduling(n_cores, tasks_dict)[0], optimal))
     return scores
 
 # TESTS in the main file
