@@ -14,7 +14,7 @@ from time import time
 
 # graph to use
 data_folder = Path("../graphs") 
-path_graph = data_folder / "smallComplex.json"
+path_graph = data_folder / "smallRandom.json"
 #path_graph = "smallComplex.json"
 
 # sizes
@@ -35,7 +35,7 @@ epochs = 10
 verbose = True
 time_analytics = True
 colored_graph_displaying = True
-verify_legality = False
+verify_legality = True
 graph_evolution = False
 
 
@@ -102,7 +102,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     bar = '\n_________________________________________________________________'
     print('\n' + bar + '\n_______________________________RESULTS_______________________________' + bar + '\n')
     best_result = ordre.selection_nbest(population, 1, scores)[0]
-    #print(best_result)
+    print(best_result)
     print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
     print(bar + '\n\n')
 
