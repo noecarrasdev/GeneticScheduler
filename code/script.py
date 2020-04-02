@@ -13,9 +13,10 @@ from time import time
 # PARAMETERS
 
 # graph to use
-#data_folder = Path("../graphs") for local use
-data_folder = Path("/mnt/batch/tasks/shared/GeneticScheduler/graphs") # for Azure
-path_graph = data_folder / "mediumComplex.json"
+data_folder = Path("../graphs") 
+#path_graph = data_folder / "mediumComplex.json"
+path_graph = "mediumComplex.json"
+
 # sizes
 n_population = 100
 n_cores = 4

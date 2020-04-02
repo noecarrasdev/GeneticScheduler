@@ -129,8 +129,8 @@ dmypy.json
 .pyre/
 
 # ignore commiting the graphs
-#graphs
-largeComplex.json
+/graphs
+#largeComplex.json
 
 # other python things to ignore
 .idea
