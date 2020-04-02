@@ -53,8 +53,7 @@ class Ordre:
             if i_core != minCore:
                 if times[minCore].isSmaller(times[i_core]):
                     currentID = cpuord[i_core][-1][0]
-                    print(tasks_dict[currentID].dependence)
-                    if currentID in tasks_dict[currentID].dependence:
+                    if currentID in tasks_dict[task].dependence:
                         new_time = cpuord[i_core][-1][1].add(cpuord[i_core][-1][2])
                         if max_time.isSmaller(new_time):
                             max_time = new_time

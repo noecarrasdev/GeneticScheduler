@@ -14,7 +14,7 @@ from time import time
 
 # graph to use
 data_folder = Path("../graphs") 
-path_graph = data_folder / "smallRandom.json"
+path_graph = data_folder / "mediumRandom.json"
 #path_graph = "smallComplex.json"
 
 # sizes
@@ -35,7 +35,7 @@ epochs = 10
 verbose = True
 time_analytics = True
 colored_graph_displaying = True
-verify_legality = True
+verify_legality = False
 graph_evolution = False
 
 
