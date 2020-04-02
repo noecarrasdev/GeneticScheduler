@@ -2,6 +2,7 @@ import json
 import task
 import time_personalized
 from numpy import ceil,inf
+import ijson
 
 
 def loadTasks(doc):
@@ -47,30 +48,17 @@ def tasksCount(doc):
     return count
 
 
-def loadTasksLargeJson(doc, Me=0, NbP=4, tasksNumber=None, deleteDependencies=True):
+def loadTasksLargeJson(doc):
     '''
     :param doc: path of a proper large JSON file
-    :Me: rank of current process
-    :NbP: number of processes
-    :tasksNumber(optional): number of nodes in the JSON file
-    :deleteDependencies(optional): to delete dependencies that are smaller than the first node
     :return: a Dictionnary with the tasks ID, time and dependancies
     '''
-
-    # If isn't give tasksNumber. Note that give this parameter to save time.
-    if tasksNumber==None:
-        tasksNumber = tasksCount(doc)
-
-    nodeStart = ceil(tasksNumber/NbP) * Me
-    nodeEnd = ceil(tasksNumber/NbP) * (Me+1)
-    
     nodes_dict = dict()
     current_key = None
     current_time = None
     current_dependence = list()
     current_reading = False
     current_node_number = 0
-    first_node_key = inf
 
     with open(doc, 'r') as f:
         parser = ijson.parse(f)
@@ -84,18 +72,9 @@ def loadTasksLargeJson(doc, Me=0, NbP=4, tasksNumber=None, deleteDependencies=Tr
                 if prefix=='nodes.'+current_key+'.Data' and event=='string':
                     current_time = time_personalized.getTimeFromData(value)
                 elif prefix=='nodes.'+current_key+'.Dependencies.item' and event=='number':
-                    if deleteDependencies:
-                        if value>first_node_key:
-                            current_dependence.append(value)
-                    else:
-                        current_dependence.append(value)
+                    current_dependence.append(value)
                 elif prefix=='nodes.'+current_key and event=='end_map':                        
-                    if current_node_number>nodeStart:
-                        nodes_dict[int(current_key)] = task.Task(int(current_key), current_time, current_dependence)
-                        if current_node_number==nodeStart+1:
-                            first_node_key=int(current_key)
-                    if current_node_number==nodeEnd:
-                        return nodes_dict
+                    nodes_dict[int(current_key)] = task.Task(int(current_key), current_time, current_dependence)
                     current_key = None
                     current_time = None
                     current_dependence = list()
