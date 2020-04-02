@@ -45,13 +45,16 @@ class Ordre:
         :return: the TimeTask object of when to start the new task
         '''
         max_time = times[minCore]
+        if n_cores == 0:
+            return 'error : no cores to compute on'
         if n_cores == 1:
             return max_time
         for i_core in range(n_cores):
             if i_core != minCore:
                 if times[minCore].isSmaller(times[i_core]):
-                    if cpuord[i_core][-1][0].ID in task.dependence:
-                        new_time = cpuord[i_core][-1][0].time.add(cpuord[i_core][-1][1])
+                    currentID = cpuord[i_core][-1][0]
+                    if currentID in tasks_dict[currentID].dependence:
+                        new_time = cpuord[i_core][-1][1].add(cpuord[i_core][-1][2])
                         if max_time.isSmaller(new_time):
                             max_time = new_time
         return max_time
@@ -76,13 +79,14 @@ class Ordre:
             minCore = time_personalized.argmini(times)
 
             # find until when to wait on this core (resolve the Dependancies)
-            beginTime = self.newTime(CpuOrder, times, task, minCore, n_cores)
+            beginTime = self.newTime(CpuOrder, tasks_dict, times, task, minCore, n_cores)
 
             # updates the informations to continue with next tasks
-            CpuOrder[minCore].append([task, beginTime])
+            lengthTime = tasks_dict[task].time
+            CpuOrder[minCore].append([task, lengthTime, beginTime])
             if verbose:
-                print('for this task, the time taken is : ', task.time)
-            times[minCore] = beginTime.add(task.time)
+                print('for this task, the time taken is : ', lengthTime)
+            times[minCore] = beginTime.add(lengthTime)
 
             if verbose:
                 print(f'after the execution on this task, we are at : ')
@@ -138,11 +142,10 @@ class Ordre:
                     new_seed.pop(ind_mut + 1)
                 if verbose:
                     print('after a mutation', new_seed)
-        # use that list to return a new ordre issued from this
-        new_ordre = Ordre(np.array([tasks_dict[i] for i in new_seed]))
-        return new_ordre
 
-    def isLegal(self, number_of_tasks):
+        return Ordre(np.array(new_seed))
+
+    def isLegal(self, tasks_dict, number_of_tasks):
         '''
         :param number_of_tasks: number of tasks in the whole graph
         :return: Boolean representing if this ordre is valid
@@ -152,11 +155,11 @@ class Ordre:
             return False
         resolved_tasks = []
         for task in self.ordre:
-            for dependency in task.dependence:
+            for dependency in tasks_dict[task].dependence:
                 if dependency not in resolved_tasks:
                     print(f'{task.ID} is wrong because it appears before its dependency {dependency}')
                     return False
-            resolved_tasks.append(task.ID)
+            resolved_tasks.append(task)
         return True
 
 
@@ -169,8 +172,7 @@ def crossover_2_parents(parent_ordre1, parent_ordre2, bloc_taille=2):
     :param bloc_taille: size of the chunks to keep
     :return: Ordre issued from the crossover
     '''
-    ordre_nouvel = []
-    ID_list = []
+    new_ordre = []
     ordre1 = parent_ordre1.ordre
     ordre2 = parent_ordre2.ordre
     assert len(ordre1) == len(ordre2)
@@ -180,18 +182,9 @@ def crossover_2_parents(parent_ordre1, parent_ordre2, bloc_taille=2):
         temp_list2 = ordre2[i * bloc_taille: (i + 1) * bloc_taille]
         for tpl in (temp_list1, temp_list2):
             for task in tpl:
-                if task.ID not in ID_list:
-                    ordre_nouvel.append(task)
-                    ID_list.append(task.ID)
-    return Ordre(np.array(ordre_nouvel))
-
-
-def croisement_pop(population, size_block):
-    # TODO : améliorer ça...
-    for k in range(len(population) // 2):
-        ordre1 = population[2 * k]
-        ordre2 = population[2 * k + 1]
-        population.append(crossover_2_parents(ordre1, ordre2, size_block))
+                if task not in new_ordre:
+                    new_ordre.append(task)
+    return Ordre(np.array(new_ordre))
 
 
 def print_ordre(ordre):
@@ -201,7 +194,7 @@ def print_ordre(ordre):
     print the ID order
     '''
     for k in range(len(ordre.ordre)):
-        print(ordre.ordre[k].ID)
+        print(ordre.ordre[k])
 
 
 def print_cpuord(cpuord):
@@ -266,8 +259,8 @@ def selection_nbest(population, n, scores, verbose=False):
     if verbose:
         best_scores = [None] * n
 
-    score_ranks = sorted(range(len(scores)),
-                         key=lambda i: scores[i])  # indexes of the biggest indexes in decreasing order
+    # indexes of the biggest indexes in decreasing order
+    score_ranks = sorted(range(len(scores)), key=lambda i: scores[i])
     best_elements = [None] * n
     for i in range(n):
         best_elements[i] = population[score_ranks[i]]
@@ -279,33 +272,6 @@ def selection_nbest(population, n, scores, verbose=False):
         print('average : ', mean(best_scores))
 
     return best_elements
-
-
-'''
-def selection_mpi(population,n, verbose=False):
-        n_pop=len(population)
-        if n > n_pop:
-            return 'error : you tried to select more nodes that there is in the population'
-        data = None 
-        recvbuf = None
-        sendbuf = None
-        sub_size = ceil(n_pop/size)  # size of array that will be sent to different cores
-        n_send = ceil(n/size)
-
-        if rank == 0 :
-            data = population 
-        recvbuf = np.empty(sub_size, dtype='d')
-        if rank != 0 : 
-            recvbuf = np.empty(sub_size, dtype='d')
-        Comm.Scatter(data, recvbuf, root=0) #scatters the original population in smaller ones on the different cores
-        if rank != 0 :
-            sendbuf = selection_nbest(recvbuf,n_send) #do selection on all smaller arrays
-        if rank == 0 :
-            recvbuf = np.empty(n_send*size, dtype='d')
-        Comm.Gather(sendbuf,recvbuf,root=0) #gathers all small arrays in one big array 
-        if rank == 0 :
-            return(selection_nbest(recvbuf,n))
-'''
 
 
 def mean(L):
