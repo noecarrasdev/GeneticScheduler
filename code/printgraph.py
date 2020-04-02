@@ -40,9 +40,9 @@ def print_plane_graph(tasks_dict, label=False):
 
     # DRAWING PARAMS
     if n < 1000:
-        node_sizes = 5 + 500 * (1000 - n) / 1000
+        node_sizes = 40 + 500 * (1000 - n) / 1000
     else:
-        node_sizes = 5
+        node_sizes = 40
     pos = nx.layout.spring_layout(G)
 
     # DRAW
@@ -112,9 +112,9 @@ def print_color_graph(tasks_dict, ordreprint, label=False, pos=None, title=None)
 
     # DRAWING PARAMS
     if n < 1000:
-        node_sizes = 5 + 500 * (1000 - n)/1000
+        node_sizes = 40 + 500 * (1000 - n)/1000
     else:
-        node_sizes = 5
+        node_sizes = 40
     # uses own layout if none specified
     if not pos:
         pos = nx.layout.spring_layout(G)

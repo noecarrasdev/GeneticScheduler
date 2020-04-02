@@ -20,14 +20,9 @@ class Ordre:
         '''
         try:
             if type(ordre) == type(np.array([1])):
-                if len(ordre) == 0 or type(ordre[0]) == type(task.Task(1, time_personalized.TimeTask(1, 2, 3, 4), [])):
-                    self.ordre = ordre
-                else:
-                    print('must be Task inside of the array')
-                    self.ordre = np.array([])
+                self.ordre = ordre
             else:
-                print('must be a np.array')
-                self.ordre = np.array([])
+                print('give an array')
         except:
             print('unexpected error')
             self.ordre = np.array([])
@@ -37,14 +32,14 @@ class Ordre:
         message = 'Ordre : '
         if n > 0:
             for k in range(n):
-                message += (str(self.ordre[k].ID) + ' - ')
+                message += (str(self.ordre[k]) + ' - ')
         elif n == 0:
             message = 'empty Ordre'
         else:
             message = 'error'
         return message
 
-    def newTime(self, cpuord, times, task, minCore, n_cores):
+    def newTime(self, tasks_dict, cpuord, times, task, minCore, n_cores):
         '''
         :params: from CPUScheduling
         :return: the TimeTask object of when to start the new task
@@ -61,7 +56,7 @@ class Ordre:
                             max_time = new_time
         return max_time
 
-    def CPUScheduling(self, n_cores, verbose=False):
+    def CPUScheduling(self, n_cores, tasks_dict, verbose=False):
         '''
         gives the order of the tasks in the CPU and the time taken to compute everything
         :return: 2 things :
@@ -73,7 +68,7 @@ class Ordre:
 
         for task in self.ordre:
             if verbose:
-                print(f'for the task {task.ID}, the times are : ')
+                print(f'for the task {task}, the times are : ')
                 for i in range(len(times)):
                     print(f'core {i} is at time : ', times[i])
 
@@ -280,8 +275,8 @@ def selection_nbest(population, n, scores, verbose=False):
             best_scores[i] = scores[score_ranks[i]]
 
     if verbose:
-        print('best is : ', best_scores[0])
-        print('average is : ', mean(best_scores))
+        print('best    : ', best_scores[0])
+        print('average : ', mean(best_scores))
 
     return best_elements
 
