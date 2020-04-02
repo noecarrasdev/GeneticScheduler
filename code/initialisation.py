@@ -9,13 +9,13 @@ from copy import deepcopy
 
 # CODE
 
-def initialisation_rand(graph, verbose=False):
+def initialisation_rand(tasks_dict, verbose=False):
     '''
-    :param graph: dict of tasks indeed by integers corresponding to the task.ID attribute
+    :param tasks_dict: dict of tasks indeed by integers corresponding to the task.ID attribute
     :return: a valid combination
     '''
     # initial lists
-    n = len(graph.keys())
+    n = len(tasks_dict.keys())
     res = []
     frontier = []
 
@@ -23,7 +23,7 @@ def initialisation_rand(graph, verbose=False):
     # nb : graphs starts at 0 so in the position [0] we place a None marker
     task_dependencies = [None]
     for i in range(1, n + 1):
-        task_dependencies.append(deepcopy(graph[i].dependence))
+        task_dependencies.append(deepcopy(tasks_dict[i].dependence))
 
     # gives tasks depending of the current task
     task_todepend = [[] for i in range(n + 1)]
@@ -48,7 +48,7 @@ def initialisation_rand(graph, verbose=False):
     if verbose:
         print('\ninitial fronier is : ')
         for x in frontier:
-            print(f'task {graph[x].ID}')
+            print(f'task {tasks_dict[x].ID}')
 
     # ajout progressif des enfants
     if verbose:
@@ -78,10 +78,10 @@ def initialisation_rand(graph, verbose=False):
         print('\n\n\n')
 
     # transform res into an Ordre object
-    res_ordre = ordre.Ordre(np.array([graph[i] for i in res]))
+    res_ordre = ordre.Ordre(np.array([tasks_dict[i] for i in res]))
     if verbose:
         for i in range(n):
-            print(f'res list has {res[i]} and ordre has {res_ordre.ordre[i].ID}, the difference being : {res_ordre.ordre[i].ID - res[i]}')
+            print(f'res list has {res[i]} and ordre has {res_ordre.ordre[i]}, the difference being : {res_ordre.ordre[i] - res[i]}')
 
 
     if verbose:
@@ -95,15 +95,15 @@ def initialisation_rand(graph, verbose=False):
         return None
 
 
-def population_initiale(graph, nombre):
+def population_initiale(tasks_dict, nombre):
     '''
-    :param graph: dict of tasks indeed by integers corresponding to the task.ID attribute
+    :param tasks_dict: dict of tasks indeed by integers corresponding to the task.ID attribute
     :param nombre: number of initialized individuals wanted
     :return: a list of valid Ordre objects
     '''
     population = []
     for _ in range(nombre):
-        population.append(initialisation_rand(graph))
+        population.append(initialisation_rand(tasks_dict))
     return population
 
 
