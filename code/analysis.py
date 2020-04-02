@@ -17,7 +17,7 @@ def performance_evaluation(scores, means):
     plt.plot(abs, np.array(scores), label='best')
     plt.plot(abs, np.array(means), label='means')
     plt.xlabel("EPOCH")
-    plt.ylabel("SCORE : time scheduled / opt time (sum of all tasks times / numbers of cores)")
+    plt.ylabel("SCORE : time scheduled / optimal time")
     plt.legend()
     plt.show()
 
