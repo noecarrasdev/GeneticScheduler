@@ -31,14 +31,14 @@ def int2binary(n) :
 
 
 def choix_pivot(n,i) :
-    """choix du pivot median dans une liste """
+    """choix du pivot median dans une liste du coup on prend """
     
-    if int2binary(n)[:i]==[0]*i :
+    if int2binary(n)[:i+1]==[0]*i :               #on prend comme pivot la medianne
         n=len(data)
         return(data[n//2])
     else :
-        target = np.zeros(d)
-        target[i] = 1
+        target = np.zeros(d)                    #sinon on prend le pivot du coeurs associé
+        target[i] = 1 
         target = int2binary(me)-target
         target = binary2int(target)
         return(choix_pivot(target,i))
@@ -71,7 +71,7 @@ def quick_sort_hypercube(tab) :
         pivot = choix_pivot(me,i)         
         tab_inf,tab_sup = partition(data,pivot)  
         if int2binary(me)[i] ==0 :
-            target = np.zeros(d)
+            target = np.zeros(d)                               #calcul de la target avec qui on va échanger les listes
             target[i] = 1
             target = target + int2binary(me)
             target = binary2int(target)
