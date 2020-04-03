@@ -7,25 +7,59 @@ from math import *
 comm=MPI.COMM_WORLD
 NbP = comm.Get_size()
 me = comm.Get_rank()
+d=int(np.log2(NbP)) #dimension du cube
+data = np.empty()
+tab_inf = None
+tab_sup = None
+tab_buf = None
+pivot = None
+indice_pivot = None
 
-def choix_pivot(tab) :
+def binary2int(tab) :
+    res = 0
+    for i in range(len(tab)) :
+        res+=(2**i)*tab[i]
+    return(res)
+
+def int2binary(n) :
+    bin = np.binary_repr(n)
+    res = np.zeros(len(bin))
+    for i in range(len(bin)) :
+        res[i] = int(bin[i])
+    return(res)
+
+
+
+def choix_pivot(n,i) :
     """choix du pivot median dans une liste """
-    tab=np.sort(tab)
-    n=len(tab)
-    return(tab[n//2])
+    
+    if int2binary(n)[:i]==[0]*i :
+        n=len(data)
+        return(data[n//2])
+    else :
+        target = np.zeros(d)
+        target[i] = 1
+        target = int2binary(me)-target
+        target = binary2int(target)
+        return(choix_pivot(target,i))
+
+def partition(tab,x) :
+    """separer la liste en 2 liste une dont les elemens <x et lautres >x"""
+    tab_i=[]
+    tab_s=[]
+    for k in tab :
+        if k<x :
+            tab_i.append(k)
+        else :
+            tab_s.append(k)
+    return(tab_i,tab_s)
 
 
 def quick_sort_hypercube(tab) :
-    d=int(np.log2(NbP))
     n = len(tab)
     n_sub = n//NbP
     r=n%NbP
-    data = None
-    tab_inf = None
-    tab_sup = None
-    tab_buf = None
-    pivot = None
-    indice_pivot = None
+    
     res = []
     """ on reparti la liste sur les différents processeur"""
     if me <= r :
@@ -34,23 +68,21 @@ def quick_sort_hypercube(tab) :
         data = tab[n_sub*me:n_sub*(me+1)]
     np.sort(data)
     for i in range(d-1,-1,-1) :
-        pivot = choix_pivot(data)        #j'ai limpresion cette ligne sert a rien vu qu'on trie genre wtf 
-        indice_pivot = data.index(pivot) #celle la aussi 
-        np.partition(data,indice_pivot)  #celle la aussi 
-        n = len(data)
-        tab_inf = data[:ceil(n/2)]
-        tab_sup = data[ceil(n/2):]
-        if np.binary_repr(me)[i] ==0 :
+        pivot = choix_pivot(me,i)         
+        tab_inf,tab_sup = partition(data,pivot)  
+        if int2binary(me)[i] ==0 :
             target = np.zeros(d)
             target[i] = 1
-            target = target + me 
+            target = target + int2binary(me)
+            target = binary2int(target)
             comm.send(tab_sup,target)
             comm.recv(tab_buf,target)
             data = np.sort(np.concatenate((tab_inf,tab_buf)))   #c'est le union_ordonne mais je suis pas 100% sur que c'est ca
         else :
             target = np.zeros(d)
             target[i] = 1
-            target = me-target 
+            target = int2binary(me)-target 
+            target = binary2int(target)
             comm.send(tab_inf,target)
             comm.recv(tab_buf,target)
             data = np.sort(np.concatenate((tab_sup,tab_buf)))
