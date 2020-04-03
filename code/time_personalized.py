@@ -1,7 +1,7 @@
 # CODE
 
 class TimeTask:
-    def __init__(self, heure, minute ,seconde , ms):
+    def __init__(self, heure, minute ,seconde , ms=0):
         self.heure = heure
         self.minute = minute
         self.seconde = seconde
@@ -51,7 +51,10 @@ def getTimeFromData(data):
     # data form is hh:mm:ss.sssssss STRING
     data = data.replace('.',':')
     list = data.split(':')
-    return TimeTask(int(list[0]), int(list[1]), int(list[2]), int(list[3][:2]))
+    if len(list)==3:
+        return TimeTask(int(list[0]), int(list[1]), int(list[2]))
+    else:
+        return TimeTask(int(list[0]), int(list[1]), int(list[2]), int(list[3][:2]))
 
 
 def argmini(times):
