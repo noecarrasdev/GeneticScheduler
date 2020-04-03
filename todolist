@@ -5,6 +5,7 @@ ________ CODE
 TODO : améliorer le CpuOrder pour compresser les blancs ?
 TODO : implémenter d'autres selections, d'autres types de crossovers (autre type comme le groupe 2 ou bien juste notre type mais avec plus que 2 parents)
 TODO : mutations adaptatives ? force des mutations s'adapte selon la vitesse de convergence (augmente si le best converge bcp)
+TODO : initialisation fait avec bcp plus d'individus et selection des meilleurs (+ un peu de hasard ?) ?
 TODO : monitorer les temps d'execution
 TODO : change the data structure of the ordre --> transform the code completely to have the ordre be a simple list or array, timetask a number.
 TODO : garder des individus moins bons pour faire des croisements et des mutations (sortir des optimum locaux)
@@ -12,14 +13,10 @@ TODO : garder des individus moins bons pour faire des croisements et des mutatio
 
 ________ VISUALISATION
 
-TODO : create the colormap with matplotlib to see the execution then visualisation with NetworkX of the graphs, and colormap according to the order of execution, figure with tkinter to display it and pass slides in one figure
-
+TODO : paramètre pour avoir l'évolution des graphes que sur les étapes 0, 10, etc jusqu'à la fin : analyse de grose graphes
 
 ________ ANALYSIS
 
-TODO : ??? homemade graph to modify to analyze the behaviour of our algorithm (when working properly)
-TODO : FIX analyze the blank sequences : size, distribution, biggest + idem for tasks
-TODO : run the code on more task graphs
 TODO : analyze the effect of each parameter on computational time, results etc
 TODO : find how to optimize the convergence and the computational time
 TODO : analyze the repeatability of the results (sometimes with the same executions, the error in the result can vary of factors more than 10 !)
