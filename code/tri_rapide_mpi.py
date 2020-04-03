@@ -33,13 +33,13 @@ def int2binary(n) :
 def choix_pivot(n,i) :
     """choix du pivot median dans une liste du coup on prend """
     
-    if int2binary(n)[:i+1]==[0]*i :               #on prend comme pivot la medianne
+    if int2binary(n)[:i+1]==[0]*i :            #on prend comme pivot la medianne
         n=len(data)
         return(data[n//2])
     else :
-        target = np.zeros(d)                    #sinon on prend le pivot du coeurs associé
-        target[i] = 1 
-        target = int2binary(me)-target
+        target = np.copy(int2binary(me))        #sinon on prend le pivot du coeurs associé
+        for j in range(i) :
+            target[j] = 0 
         target = binary2int(target)
         return(choix_pivot(target,i))
 
