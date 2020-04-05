@@ -130,7 +130,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")
     if Me == 0 :
         best_elements = [k[0] for k in data]   #on recupere uniquement les individus
-        if len(best)_elements>n :     #on prend que les n meilleurs si jamais on en a trop 
+        if len(best_elements)>n :     #on prend que les n meilleurs si jamais on en a trop 
             best_elements = best_elements[:n]
     else : 
         best_elements = None
