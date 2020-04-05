@@ -119,7 +119,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             target = binary2int(target)
             comm.send(tab_sup,target)
             comm.recv(tab_buf,target)
-            data = np.sort(np.concatenate((tab_inf,tab_buf)),order = "score")   #c'est le union_ordonne mais je suis pas 100% sur que c'est ca
+            data = np.sort(np.concatenate((tab_inf,tab_buf)),order = "score")   #on fait l'union des deux liste en ordonnant
         else :
             target = np.zeros(d)
             target[i] = 1
@@ -130,6 +130,8 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")
     if Me == 0 :
         best_elements = [k[0] for k in data]   #on recupere uniquement les individus
+        if len(best)_elements>n :     #on prend que les n meilleurs si jamais on en a trop 
+            best_elements = best_elements[:n]
     else : 
         best_elements = None
     best_elements = comm.Bcast(best_elements,0)
