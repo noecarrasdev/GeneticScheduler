@@ -27,6 +27,20 @@ class Ordre:
             print('unexpected error')
             self.ordre = np.array([])
 
+    def __gt__(self, other): 
+        if(self.ordre>other.ordre): 
+            return True
+        else: 
+            return False
+
+    def __lt__(self, other): 
+        return True
+    def __eq__(self, other): 
+        if(np.all(np.equal(self.ordre,other.ordre))): 
+            return True
+        else: 
+            return False
+
     def __str__(self):
         n = len(self.ordre)
         message = 'Ordre : '
