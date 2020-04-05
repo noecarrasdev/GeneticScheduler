@@ -11,7 +11,7 @@ from pathlib import Path
 import analysis
 import printgraph
 from time import time
-import tri_rapide_mpi
+from ordre import Ordre
 
 
 def selection_nbest_mpi(population, n, scores, verbose=False):
@@ -31,14 +31,14 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
     tab_buf = None
     pivot = None
     indice_pivot = None
-    dtype=[("individu" = ordre.Ordre,("score"=float)] 
+    dtype=[("individu" , ordre.Ordre),("score",float)] 
 
     n_pop = len(population)
 
     if n > n_pop * NbP:
         return 'error : you tried to select more nodes that there is in the population'
      
-     """    Partie avec scatter et gather
+    """    Partie avec scatter et gather
     score_gather = comm.gather(scores, 0)
     population_gather = comm.gather(population, 0)
 
@@ -64,10 +64,10 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         return list(best_elements)"""
     
     def binary2int(tab) :
-    res = 0
-    for i in range(len(tab)) :
-        res+=(2**i)*tab[i]
-    return(res)
+        res = 0
+        for i in range(len(tab)) :
+            res+=(2**i)*tab[i]
+        return(res)
 
     def int2binary(n) :
         bin = np.binary_repr(n)
@@ -92,19 +92,19 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             return(choix_pivot(target,i))
     
     def partition(tab,x) :
-    """separer la liste en 2 liste une dont les individus avec un score <x et lautres >x"""
-    tab_i=[]
-    tab_s=[]
-    for k in tab :
-        if k[1]<x :
-            tab_i.append(k)
-        else :
-            tab_s.append(k)
-    return(tab_i,tab_s)
+        """separer la liste en 2 liste une dont les individus avec un score <x et lautres >x"""
+        tab_i=[]
+        tab_s=[]
+        for k in tab :
+            if k[1]<x :
+                tab_i.append(k)
+            else :
+                tab_s.append(k)
+        return(tab_i,tab_s)
     
 
     """on effectue le tri rapide sur hypercube en simultané sur tous les coeurs"""
-    for i in range len(population) :    #creation de liste regroupant la population et score
+    for i in range(len(population)) :    #creation de liste regroupant la population et score
         data.append(population[i],scores[i])
         data = np.array(data,dtype=dtype)     #on type l'array pour le trie
 
