@@ -24,7 +24,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
 
     Note that n%NbP has to be 0, and n//NbP must > 1
     '''
-    global comm, NbP, Me, data
+    global comm, NbP, Me
     d=int(np.log2(NbP)) #diMension du cube
     tab_inf = None
     tab_sup = None
