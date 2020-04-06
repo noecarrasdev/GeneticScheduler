@@ -88,9 +88,8 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             res1=[]
             res2 = []
             for i in range(n) :
-                if tab[i][0]  :
-                    res1.append(tab[i][0].ordre)              #on garde le type array parce que ordre MPI arrive pas
-                    res2.append(tab[i][1])
+                res1.append(tab[i][0].ordre)              #on garde le type array parce que ordre MPI arrive pas
+                res2.append(tab[i][1])
             return(np.array(res1),np.array(res2))
 
     def reunion_pop_score(tab_pop,tab_score) :
@@ -101,8 +100,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         else :
             res=[]
             for i in range(n) :
-                if tab_pop[i] :
-                    res.append((tab_pop[i],tab_pop[i]))
+               res.append((tab_pop[i],tab_pop[i]))
             return(np.array(res))
     
     def tab2ordre(tab) :
@@ -119,12 +117,11 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         tab_i=[]
         tab_s=[]
         for k in tab :
-            if k[1] : 
-                if k[1]<x :
-                    tab_i.append(k)
-                else :
-                    tab_s.append(k)
-            return(np.array(tab_i,dtype=dtype),np.array(tab_s,dtype=dtype))
+            if k[1]<x :
+                tab_i.append(k)
+            else :
+                tab_s.append(k)
+        return(np.array(tab_i,dtype=dtype),np.array(tab_s,dtype=dtype))
     
 
     """on effectue le tri rapide sur hypercube en simultané sur tous les coeurs"""
