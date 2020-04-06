@@ -76,7 +76,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         bin = np.binary_repr(int(n))
         res = np.zeros(d)
         for i in range(len(bin)) :
-            res[i] = (bin[i])
+            res[i] = (bin[-(i+1)])    
         return(res)
 
     def separation_pop_score(tab) :
@@ -96,12 +96,12 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         """pour réunir pop et score en une table"""
         n = len(tab_pop)
         if n == 0 : 
-            return(np.empty(0))
+            return([])
         else :
             res=[]
             for i in range(n) :
-               res.append((tab_pop[i],tab_pop[i]))
-            return(np.array(res))
+               res.append((tab_pop[i],tab_score[i]))
+            return(res)
     
     def tab2ordre(tab) :
         res=[]
@@ -117,7 +117,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         tab_i=[]
         tab_s=[]
         for k in tab :
-            if k[1]<x :
+            if k[1]<=x :
                 tab_i.append(k)
             else :
                 tab_s.append(k)
@@ -129,89 +129,101 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         data.append((population[i],scores[i]))         
     data = np.array(data,dtype=dtype)    #on type l'array pour le trier
     
-    print(data)
+    #print(data)
     data = np.sort(data, order="score")    # on trie sur les scores, tri initial 
     for i in range(d-1,-1,-1) :
-        if np.all(np.equal(int2binary(Me)[:i+1],np.zeros(i))) :            #choix des coeurs qui donneront un pivot
+        #print(i)
+        if np.all(np.equal(int2binary(Me)[:i+1],np.zeros(i+1))) : #choix des coeurs qui donneront un pivot
             m=len(data)
-            pivot = data[m//2][1]                         #on prend la mediane en pivot
+            if len(data) != 0:
+                pivot = data[m//2][1]  #on prend la mediane en pivot
+            else :
+                pivot = 0                       
             for j in range(2**(i+1)-1) :                   #on envoie le pivot aux coeurs qui ne calculerons pas de pivot
-                comm.ibsend(pivot,Me+j+1)
-                print("Sent : From {} to {}".format(Me, Me+j+1))
+                comm.send(pivot,Me+j+1)
+                #print("Sent pivot : From {} to {}".format(Me, Me+j+1))
         else : 
-            target = np.copy(int2binary(n))        #sinon on prend le pivot du coeurs associé
-            for j in range(i) :
+            target = np.copy(int2binary(Me))        #sinon on prend le pivot du coeurs associé
+            for j in range(i+1) :
                 target[j] = 0
             target = binary2int(target)
-            pivot = comm.irecv(source=target)
-            print("Received : From {} to {}".format(target, Me))
+            #print("Wait to receive pivot : From {} to {}".format(target, Me))
+            pivot = comm.recv(source=target)
+            #print("Received pivot : From {} to {}".format(target, Me))
 
         tab_inf,tab_sup = partition(data,pivot)        #on partitionne en fonction du pivot
         if int2binary(Me)[i] ==0 :
-            target = np.zeros(d)                               #calcul de la target avec qui on va échanger les listes
-            target[i] = 1
-            target = target + int2binary(Me)
+            target = np.copy(int2binary(Me))
+            target[i]=1
             target = binary2int(target)
             numData=len(tab_sup)                    #on envoie et recupere le nombre de donnees a envoyer ou recvoir
-            comm.ibsend(numData,dest=target)
-            print("Sent : From {} to {}".format(Me, target))
-            numData_rec = comm.irecv(source=target)
-            print("Received : From {} to {}".format(target, Me))
+            comm.send(numData,dest=target)
+            #print("Sent numdata : From {} to {}".format(Me, target))
+            numData_rec = comm.recv(source=target)
+            #print("Received numdata : From {} to {}".format(target, Me))
             tab_buf_pop = np.empty((numData_rec,n_taches))
             tab_buf_scores = np.empty(numData_rec)
 
         else :
-            target = np.zeros(d)
-            target[i] = 1
-            target = int2binary(Me)-target 
+            target = np.copy(int2binary(Me))
+            target[i] = 0
             target = binary2int(target)
             numData=len(tab_inf)
-            comm.ibsend(numData,dest=target)
-            print("Sent : From {} to {}".format(Me, target))
-            numData_rec= comm.irecv(source=target)
-            print("Received : From {} to {}".format(target, Me))
+            comm.send(numData,dest=target)
+            #print("Sent numdata : From {} to {}".format(Me, target))
+            numData_rec= comm.recv(source=target)
+            #print("Received numdata : From {} to {}".format(target, Me))
             tab_buf_pop = np.empty((numData_rec,n_taches))
             tab_buf_scores = np.empty(numData_rec)
         
         if int2binary(Me)[i] ==0 :
             tab_sup_pop,tab_sup_score = separation_pop_score(tab_sup)                  #on envoie/recoit les donnees de population et score
-            comm.ibsend(tab_sup_pop,dest=target)
-            print("Sent : From {} to {}".format(Me, target))
-            comm.ibsend(tab_sup_score,dest = target)
-            print("Sent : From {} to {}".format(Me, target))
-            comm.irecv(tab_buf_pop,source=target)
-            print("Received : From {} to {}".format(target, Me))
-            comm.irecv(tab_buf_scores,source=target)
-            print("Received : From {} to {}".format(target, Me))
+            comm.Send(tab_sup_pop,dest=target)
+            #print("Sent : From {} to {}".format(Me, target))
+            comm.Send(tab_sup_score,dest = target)
+            #print("Sent : From {} to {}".format(Me, target))
+            comm.Recv(tab_buf_pop,source=target)
+            #print("Received : From {} to {}".format(target, Me))
+            comm.Recv(tab_buf_scores,source=target)
+            #print("Received : From {} to {}".format(target, Me))
             tab_buf_pop = tab2ordre(tab_buf_pop)                 #on repasse sur un ordre
-            tab_buf = np.array(reunion_pop_score(tab_buf_pop,tab_buf_scores),dtype=dtype)
+            tab_buf = reunion_pop_score(tab_buf_pop,tab_buf_scores)
+            tab_buf = np.array(tab_buf,dtype=dtype)
             data = np.sort(np.concatenate((tab_inf,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
         else :
             tab_inf_pop,tab_inf_score = separation_pop_score(tab_inf)                  #on envoie/recoit les donnees
-            comm.ibsend(tab_inf_pop,dest=target)
-            print("Sent : From {} to {}".format(Me, target))
-            comm.ibsend(tab_inf_score,dest=target)
-            print("Sent : From {} to {}".format(Me, target))
-            comm.irecv(tab_buf_pop,source=target)
-            print("Received : From {} to {}".format(target, Me))
-            comm.irecv(tab_buf_scores,source=target)
-            print("Received : From {} to {}".format(target, Me))
+            comm.Send(tab_inf_pop,dest=target)
+            #print("Sent : From {} to {}".format(Me, target))
+            comm.Send(tab_inf_score,dest=target)
+            #print("Sent : From {} to {}".format(Me, target))
+            comm.Recv(tab_buf_pop,source=target)
+            #print("Received : From {} to {}".format(target, Me))
+            comm.Recv(tab_buf_scores,source=target)
+
             tab_buf_pop = tab2ordre(tab_buf_pop)         
-            tab_buf = np.array(reunion_pop_score(tab_buf_pop,tab_buf_scores),dtype=dtype)
+            tab_buf = reunion_pop_score(tab_buf_pop,tab_buf_scores)
+            tab_buf = np.array(tab_buf,dtype=dtype)
             data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
     if Me == 0 :
-        best_elements = [k[0].ordre for k in data]   #on recupere uniquement les individus en array sans les scores
+        #print(data)
+        best_elements = np.array([k[0].ordre for k in data])   #on recupere uniquement les individus en array sans les scores
         if len(best_elements)>n :     #on prend que les n meilleurs si jamais on en a trop 
             best_elements = best_elements[:n]
+        #print(best_elements)
         numDatasend_bcast = len(best_elements)
-    comm.bcast(numDatasend_bcast,0)
+    else :
+        numDatasend_bcast = None
+    numDatasend_bcast = comm.bcast(numDatasend_bcast,root=0)
+    #print("numdata_bcast received")
 
     if Me != 0 : 
-        best_elements = np.empty(numDatasend_bcast*n_taches,dtype='d')
-    comm.Bcast(best_elements,0)
+
+        best_elements = np.empty((numDatasend_bcast,n_taches))
+        #print(" Me = {} --> best elements : {}".format(Me,best_elements))
+    
+    comm.Bcast(best_elements,root=0)
     best_elements = tab2ordre(best_elements) #on repasse avec des ordre
-    if Me == 0 :
-        return (best_elements)          
+    return (best_elements)          
     
 
 
@@ -255,12 +267,13 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         # mutations
         mutated_ordres = []
         for _ in range(n_mutated // NbP):
-            add_index = np.random.randint(0, n_selected // NbP, 1)[0]
+            add_index = np.random.randint(0, n_selected // NbP +1 , 1)[0]
+            # print("lequel est none ? best_orders ? : {} , add_index ? :{} , mutated_ordres: {}, ".format(best_ordres, add_index, mutated_ordres))
             mutated_ordres.append(best_ordres[add_index].mutation_multiple_out(nb_mut_max, mutation_prob, tasks_dict))
         # crossovers
         cross_ordres = []
         for _ in range(n_crossed // NbP):
-            parents = np.random.randint(0, n_selected // NbP, 2)
+            parents = np.random.randint(0, n_selected // NbP +1, 2)
             bloc_size = np.random.randint(crossover_bloc_size[0], crossover_bloc_size[1])
             cross_ordres.append(ordre.crossover_2_parents(best_ordres[parents[0]], best_ordres[parents[1]], bloc_size))
         # evaluations
@@ -318,11 +331,11 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 # graph to use
 data_folder = Path("../graphs")
 # data_folder = Path("/mnt/batch/tasks/shared/GeneticScheduler/graphs") # for Azure
-path_graph = data_folder / "smallRandom.json"
+path_graph = data_folder / "mediumRandom.json"
 #path_graph = "/code/mediumComplex.json"
 
 # sizes
-n_population = 10
+n_population = 20
 n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
