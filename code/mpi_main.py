@@ -15,8 +15,6 @@ from ordre import Ordre
 
 
 
-
-
 def selection_nbest_mpi(population, n, scores, verbose=False):
     '''
     :param population: [Ordre] to update
@@ -27,13 +25,12 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
 
     Note that n%NbP has to be 0, and n//NbP must > 1
     '''
-    global comm, NbP, Me
-    n_taches = len(population[0].ordre)
+    global comm, NbP, Me , dict_ordres
     d=int(np.log2(NbP)) #diMension du cube
     tab_inf = None
     tab_sup = None
     pivot = None
-    dtype=[("individu", ordre.Ordre),("score",float)]  #type qu'on va utiliser pour trier avec np.sort
+    dtype=[("individu", int),("score",float)]  #type qu'on va utiliser pour trier avec np.sort
     data = []
 
     n_pop = len(population)
@@ -65,7 +62,17 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
     best_elements = comm.scatter(best_elements, 0)
     if Me == 0 
         return list(best_elements)"""
+
+    def remplir_dict_ordre(tab) :  #on rempli le dico et on fait une list d'ID
+        # entrée tableau des ordre
+        # sortie liste des IDs qui associe un nombre à un ordre
+        res=[]
+        for k in tab :
+            res.append(len(dict_ordres))
+            dict_ordres.append(k)
+        return(res)
     
+
     def binary2int(tab) :
         res = 0
         for i in range(len(tab)) :
@@ -88,7 +95,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             res1=[]
             res2 = []
             for i in range(n) :
-                res1.append(tab[i][0].ordre)              #on garde le type array parce que ordre MPI arrive pas
+                res1.append(tab[i][0])              #on garde le type array parce que ordre MPI arrive pas
                 res2.append(tab[i][1])
             return(np.array(res1),np.array(res2))
 
@@ -104,9 +111,11 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             return(res)
     
     def tab2ordre(tab) :
+        #entrée : list des Ids
+        #sortie : list des ordres coresspondants aux Ids
         res=[]
         for i in tab :
-            res.append(Ordre(i))
+            res.append(dict_ordres[int(i)])
         return res 
 
 
@@ -125,6 +134,9 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
     
 
     """on effectue le tri rapide sur hypercube en simultané sur tous les coeurs"""
+    for i in range(NbP) :
+        if Me == i :
+            population = remplir_dict_ordre(population)
     for i in range(len(population)) :    #creation de liste regroupant la population et score
         data.append((population[i],scores[i]))         
     data = np.array(data,dtype=dtype)    #on type l'array pour le trier
@@ -162,7 +174,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             #print("Sent numdata : From {} to {}".format(Me, target))
             numData_rec = comm.recv(source=target)
             #print("Received numdata : From {} to {}".format(target, Me))
-            tab_buf_pop = np.empty((numData_rec,n_taches))
+            tab_buf_pop = np.empty(numData_rec)
             tab_buf_scores = np.empty(numData_rec)
 
         else :
@@ -171,23 +183,23 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             target = binary2int(target)
             numData=len(tab_inf)
             comm.send(numData,dest=target)
-            #print("Sent numdata : From {} to {}".format(Me, target))
+            print("Sent numdata : From {} to {}".format(Me, target))
             numData_rec= comm.recv(source=target)
-            #print("Received numdata : From {} to {}".format(target, Me))
-            tab_buf_pop = np.empty((numData_rec,n_taches))
+            print("Received numdata : From {} to {}".format(target, Me))
+            tab_buf_pop = np.empty(numData_rec)
             tab_buf_scores = np.empty(numData_rec)
         
         if int2binary(Me)[i] ==0 :
             tab_sup_pop,tab_sup_score = separation_pop_score(tab_sup)                  #on envoie/recoit les donnees de population et score
+            print("nique sa mere")
             comm.Send(tab_sup_pop,dest=target)
-            #print("Sent : From {} to {}".format(Me, target))
+            print("Sent : From {} to {}".format(Me, target))
             comm.Send(tab_sup_score,dest = target)
             #print("Sent : From {} to {}".format(Me, target))
             comm.Recv(tab_buf_pop,source=target)
             #print("Received : From {} to {}".format(target, Me))
             comm.Recv(tab_buf_scores,source=target)
             #print("Received : From {} to {}".format(target, Me))
-            tab_buf_pop = tab2ordre(tab_buf_pop)                 #on repasse sur un ordre
             tab_buf = reunion_pop_score(tab_buf_pop,tab_buf_scores)
             tab_buf = np.array(tab_buf,dtype=dtype)
             data = np.sort(np.concatenate((tab_inf,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
@@ -199,15 +211,13 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             #print("Sent : From {} to {}".format(Me, target))
             comm.Recv(tab_buf_pop,source=target)
             #print("Received : From {} to {}".format(target, Me))
-            comm.Recv(tab_buf_scores,source=target)
-
-            tab_buf_pop = tab2ordre(tab_buf_pop)         
+            comm.Recv(tab_buf_scores,source=target)        
             tab_buf = reunion_pop_score(tab_buf_pop,tab_buf_scores)
             tab_buf = np.array(tab_buf,dtype=dtype)
             data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
     if Me == 0 :
         #print(data)
-        best_elements = np.array([k[0].ordre for k in data])   #on recupere uniquement les individus en array sans les scores
+        best_elements = np.array([k[0]for k in data])   #on recupere uniquement les individus en array sans les scores
         if len(best_elements)>n :     #on prend que les n meilleurs si jamais on en a trop 
             best_elements = best_elements[:n]
         #print(best_elements)
@@ -219,13 +229,14 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
 
     if Me != 0 : 
 
-        best_elements = np.empty((numDatasend_bcast,n_taches))
+        best_elements = np.empty(numDatasend_bcast)
         #print(" Me = {} --> best elements : {}".format(Me,best_elements))
     
     comm.Bcast(best_elements,root=0)
     best_elements = tab2ordre(best_elements) #on repasse avec des ordre
-    return (best_elements)          
     
+    dict_ordres = []        
+    return (best_elements)
 
 
 def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed,
@@ -296,6 +307,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
             ana_scores.append(scores[0])
             ana_means.append(ordre.mean(scores))
 
+
     # log results to the console
     best_result = selection_nbest_mpi(population, NbP, scores)[0]
 
@@ -332,7 +344,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 # graph to use
 data_folder = Path("../graphs")
 # data_folder = Path("/mnt/batch/tasks/shared/GeneticScheduler/graphs") # for Azure
-path_graph = data_folder / "mediumRandom.json"
+path_graph = data_folder / "mediumComplex.json"
 #path_graph = "/code/mediumComplex.json"
 
 # sizes
@@ -356,7 +368,7 @@ colored_graph_displaying = False
 blank_analysis = False
 verify_legality = False
 graph_evolution = False
-
+dict_ordres=[]
 comm = MPI.COMM_WORLD
 NbP = comm.Get_size()
 Me = comm.Get_rank()
@@ -367,6 +379,7 @@ comm.Barrier()
 if __name__ == "__main__":
     # START ALGO
     print("commence")
+    
     if Me == 0:
         start_time = time()
     best_result = main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_crossed, mutations_prob,
