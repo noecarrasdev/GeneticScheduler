@@ -133,19 +133,21 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
     data = np.array(data,dtype=dtype)    #on type l'array pour le trier
     
     print(data)
-    np.sort(data, order="score")    # on trie sur les scores, tri initial 
+    data = np.sort(data, order="score")    # on trie sur les scores, tri initial 
     for i in range(d-1,-1,-1) :
         if np.all(np.equal(int2binary(Me)[:i+1],np.zeros(i))) :            #choix des coeurs qui donneront un pivot
             m=len(data)
             pivot = data[m//2][1]                         #on prend la mediane en pivot
             for j in range(2**(i+1)-1) :                   #on envoie le pivot aux coeurs qui ne calculerons pas de pivot
-                comm.send(pivot,Me+j+1)
+                comm.ibsend(pivot,Me+j+1)
+                print("Sent : From {} to {}".format(Me, Me+j+1))
         else : 
             target = np.copy(int2binary(n))        #sinon on prend le pivot du coeurs associé
             for j in range(i) :
                 target[j] = 0
             target = binary2int(target)
-            pivot = comm.recv(source=target)
+            pivot = comm.irecv(source=target)
+            print("Received : From {} to {}".format(target, Me))
 
         tab_inf,tab_sup = partition(data,pivot)        #on partitionne en fonction du pivot
         if int2binary(Me)[i] ==0 :
@@ -154,8 +156,10 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             target = target + int2binary(Me)
             target = binary2int(target)
             numData=len(tab_sup)                    #on envoie et recupere le nombre de donnees a envoyer ou recvoir
-            comm.send(numData,dest=target)
-            numData_rec = comm.recv(source=target)
+            comm.ibsend(numData,dest=target)
+            print("Sent : From {} to {}".format(Me, target))
+            numData_rec = comm.irecv(source=target)
+            print("Received : From {} to {}".format(target, Me))
             tab_buf_pop = np.empty((numData_rec,n_taches))
             tab_buf_scores = np.empty(numData_rec)
 
@@ -165,26 +169,36 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             target = int2binary(Me)-target 
             target = binary2int(target)
             numData=len(tab_inf)
-            comm.send(numData,dest=target)
-            numData_rec= comm.recv(source=target)
+            comm.ibsend(numData,dest=target)
+            print("Sent : From {} to {}".format(Me, target))
+            numData_rec= comm.irecv(source=target)
+            print("Received : From {} to {}".format(target, Me))
             tab_buf_pop = np.empty((numData_rec,n_taches))
             tab_buf_scores = np.empty(numData_rec)
         
         if int2binary(Me)[i] ==0 :
             tab_sup_pop,tab_sup_score = separation_pop_score(tab_sup)                  #on envoie/recoit les donnees de population et score
-            comm.Send(tab_sup_pop,dest=target)
-            comm.Send(tab_sup_score,dest = target)
-            comm.Recv(tab_buf_pop,source=target)
-            comm.Recv(tab_buf_scores,source=target)
+            comm.ibsend(tab_sup_pop,dest=target)
+            print("Sent : From {} to {}".format(Me, target))
+            comm.ibsend(tab_sup_score,dest = target)
+            print("Sent : From {} to {}".format(Me, target))
+            comm.irecv(tab_buf_pop,source=target)
+            print("Received : From {} to {}".format(target, Me))
+            comm.irecv(tab_buf_scores,source=target)
+            print("Received : From {} to {}".format(target, Me))
             tab_buf_pop = tab2ordre(tab_buf_pop)                 #on repasse sur un ordre
             tab_buf = np.array(reunion_pop_score(tab_buf_pop,tab_buf_scores),dtype=dtype)
             data = np.sort(np.concatenate((tab_inf,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
         else :
             tab_inf_pop,tab_inf_score = separation_pop_score(tab_inf)                  #on envoie/recoit les donnees
-            comm.Send(tab_inf_pop,dest=target)
-            comm.Send(tab_inf_score,dest=target)
-            comm.Recv(tab_buf_pop,source=target)
-            comm.Recv(tab_buf_scores,source=target)
+            comm.ibsend(tab_inf_pop,dest=target)
+            print("Sent : From {} to {}".format(Me, target))
+            comm.ibsend(tab_inf_score,dest=target)
+            print("Sent : From {} to {}".format(Me, target))
+            comm.irecv(tab_buf_pop,source=target)
+            print("Received : From {} to {}".format(target, Me))
+            comm.irecv(tab_buf_scores,source=target)
+            print("Received : From {} to {}".format(target, Me))
             tab_buf_pop = tab2ordre(tab_buf_pop)         
             tab_buf = np.array(reunion_pop_score(tab_buf_pop,tab_buf_scores),dtype=dtype)
             data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
