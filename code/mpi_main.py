@@ -171,7 +171,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             tab_buf_scores = np.empty(numData_rec)
         
         if int2binary(Me)[i] ==0 :
-            tab_sup_pop,tab_sup_score = separation_pop_score(tab_sup)                  #on envoie/recoit les donnees
+            tab_sup_pop,tab_sup_score = separation_pop_score(tab_sup)                  #on envoie/recoit les donnees de population et score
             comm.Send(tab_sup_pop,dest=target)
             comm.Send(tab_sup_score,dest = target)
             comm.Recv(tab_buf_pop,source=target)
@@ -187,11 +187,9 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
             comm.Recv(tab_buf_scores,source=target)
             tab_buf_pop = tab2ordre(tab_buf_pop)         
             tab_buf = np.array(reunion_pop_score(tab_buf_pop,tab_buf_scores),dtype=dtype)
-            data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")
-
-            #on fait l'union des deux liste en ordonnant
+            data = np.sort(np.concatenate((tab_sup,tab_buf)),order = "score")    #on fait l'union des deux liste en ordonnant
     if Me == 0 :
-        best_elements = [k[0].ordre for k in data]   #on recupere uniquement les individus
+        best_elements = [k[0].ordre for k in data]   #on recupere uniquement les individus en array sans les scores
         if len(best_elements)>n :     #on prend que les n meilleurs si jamais on en a trop 
             best_elements = best_elements[:n]
         numDatasend_bcast = len(best_elements)
@@ -201,7 +199,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
         best_elements = np.empty(numDatasend_bcast*n_taches,dtype='d')
     comm.Bcast(best_elements,0)
     if Me == 0 :
-        return (best_elements)
+        return (tab2ordre(best_elements))          #on repasse avec des ordre
     
 
 
