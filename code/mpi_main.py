@@ -198,8 +198,9 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
     if Me != 0 : 
         best_elements = np.empty(numDatasend_bcast*n_taches,dtype='d')
     comm.Bcast(best_elements,0)
+    best_elements = tab2ordre(best_elements) #on repasse avec des ordre
     if Me == 0 :
-        return (tab2ordre(best_elements))          #on repasse avec des ordre
+        return (best_elements)          
     
 
 
