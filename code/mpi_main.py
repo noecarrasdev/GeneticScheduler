@@ -343,7 +343,8 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 
 # graph to use
 data_folder = Path("../graphs")
-# data_folder = Path("/mnt/batch/tasks/shared/GeneticScheduler/graphs") # for Azure
+path_graph = data_folder / "mediumComplex.json"
+data_folder = Path("/mnt/batch/tasks/shared/code") # for Azure
 path_graph = data_folder / "mediumComplex.json"
 #path_graph = "/code/mediumComplex.json"
 
