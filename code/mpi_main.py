@@ -130,6 +130,7 @@ def selection_nbest_mpi(population, n, scores, verbose=False):
     data = np.array(data,dtype=dtype)    #on type l'array pour le trier
     
     #print(data)
+    #print("tri")
     data = np.sort(data, order="score")    # on trie sur les scores, tri initial 
     for i in range(d-1,-1,-1) :
         #print(i)
@@ -374,4 +375,4 @@ if __name__ == "__main__":
                                 verify_legality=verify_legality, graph_evolution=graph_evolution)
     if Me == 0:
         end_time = time()
-        print('Total Time : {0} s'.format(end_time - start_time))
+        print('Total Time : {0} s'.format(end_time - start_time)) 

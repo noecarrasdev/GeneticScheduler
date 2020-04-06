@@ -14,7 +14,7 @@ from time import time
 
 # graph to use
 data_folder = Path("../graphs") 
-path_graph = data_folder / "mediumRandom.json"
+path_graph = data_folder / "smallRandom.json"
 #path_graph = "smallComplex.json"
 
 # sizes
