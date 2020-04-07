@@ -228,9 +228,9 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     for epoch in range(epochs):
         if verbose and Me == 0:
             print(f'\n__________epoch n{epoch}_________')
-            best_result = ordre.selection_nbest(population, NbP, scores)[0]
-            keep_best_result_azure.append(ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
-            print('the best ordre epochs has a score of : ', ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
+            BEST = selection_nbest_mpi(population, n_selected, scores)[0]
+            keep_best_result_azure.append(ordre.population_eval([BEST], n_cores, tasks_dict, optimal_time)[0])
+            print('the best ordre epochs has a score of : ', ordre.population_eval([BEST], n_cores, tasks_dict, optimal_time)[0])
         # selection of the bests
         best_ordres = selection_nbest_mpi(population, n_selected, scores, verbose=verbose)
 
