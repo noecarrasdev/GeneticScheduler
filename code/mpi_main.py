@@ -299,7 +299,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
 data_folder = Path("../graphs")
 path_graph = data_folder / "mediumComplex.json"
 data_folder = Path("/mnt/batch/tasks/shared/code") # for Azure
-path_graph = data_folder / "mediumComplex.json"
+path_graph = data_folder / "largeComplex.json"
 #path_graph = "/code/mediumComplex.json"
 
 # sizes
