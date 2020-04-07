@@ -222,15 +222,10 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # graph evolution
     graph_evo_best = []
 
-    keep_best_result_azure = []
-
     # execution
     for epoch in range(epochs):
         if verbose and Me == 0:
             print(f'\n__________epoch n{epoch}_________')
-            best_result = ordre.selection_nbest(population, NbP, scores)[0]
-            keep_best_result_azure.append(ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
-            print('the best ordre epochs has a score of : ', ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
         # selection of the bests
         best_ordres = selection_nbest_mpi(population, n_selected, scores, verbose=verbose)
 
@@ -275,8 +270,6 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         print('\n' + bar + '\n____________RESULTS__________' + bar + '\n')
         print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores,tasks_dict, optimal_time)[0])
         print(bar + '\n\n')
-        print(keep_best_result_azure)
-
 
         # time_analytics score printing
         if time_analytics:
@@ -310,7 +303,7 @@ path_graph = data_folder / "largeComplex.json"
 #path_graph = "/code/mediumComplex.json"
 
 # sizes
-n_population = 10
+n_population = 20
 n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
@@ -322,7 +315,7 @@ mutations_prob = 0.6
 nb_mut_max = 10
 crossover_bloc_size = (2, 8)  # must be inferior to n_tasks
 # execution
-epochs = 20
+epochs = 10
 # logs during the execution?
 verbose = True
 time_analytics = True
