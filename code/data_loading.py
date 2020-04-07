@@ -17,24 +17,6 @@ def loadTasks(doc):
             tasks[int(key)] = task.Task(int(key), time_personalized.getTimeFromData(value["Data"]),
                                         value["Dependencies"])
     # this is useful to take the complex graphs that starts with ID greater than 1 and bring them back to the same scheme as the Random.json graphs.
-   """ keys = sorted(tasks.keys())
-    first = keys[0]
-    if first != 1:
-        for key in keys:
-            tasks[key + 1 - first] = tasks[key]
-            tasks[key + 1 - first].ID -= (first - 1)
-            newdep = []
-            for dep in tasks[key + 1 - first].dependence:
-                if dep < first:
-                    print('JSON error key too small')
-                if dep > len(tasks) + first:
-                    print('JSON error key too large')
-                newdep.append(dep - first + 1)
-            tasks[key + 1 - first].dependence = newdep
-            del tasks[key]
-    return tasks"""
-
-
     keys = sorted(tasks.keys())
     nodes_dict = {}
     first = keys[0]
