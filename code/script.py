@@ -62,10 +62,14 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # graph evolution
     graph_evo_best = []
 
+    keep_best_result_azure = []
     # execution
     for epoch in range(epochs):
         if verbose:
             print(f'\n_________________________epoch n{epoch}__________________________')
+            best_result = ordre.selection_nbest(population, 1, scores)[0]
+            keep_best_result_azure.append(ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
+            print('the best ordre epochs has a score of : ', ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
         # selection of the bests
         if verbose:
             best_ordres = ordre.selection_nbest(population, n_selected, scores, verbose=True)
@@ -105,6 +109,7 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     print(best_result)
     print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
     print(bar + '\n\n')
+    print(keep_best_result_azure)
 
     # time_analytics score printing
     if time_analytics:
