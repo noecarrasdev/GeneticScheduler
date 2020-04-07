@@ -155,19 +155,19 @@ path_graph = data_folder / "mediumComplex.json"
 #path_graph = "mediumComplex.json"
 
 # sizes
-n_population = 100
+n_population = 10
 n_cores = 4
 # generation : sum must be equal to n_population
 # n_selected is the number of best individuals kept between each iteration, same idea for n_mutated and n_crossed
-n_selected = 20
-n_mutated = 20
-n_crossed = 15
+n_selected = 3
+n_mutated = 4
+n_crossed = 3
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
 mutations_prob = 0.6
-nb_mut_max = 200
-crossover_bloc_size = (20, 200) # must be inferior to n_tasks
+nb_mut_max = 10
+crossover_bloc_size = (2, 8)  # must be inferior to n_tasks
 # execution
-epochs = 50
+epochs = 10
 # logs during the execution?
 verbose = True
 time_analytics = False
