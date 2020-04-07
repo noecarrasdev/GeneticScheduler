@@ -222,10 +222,15 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
     # graph evolution
     graph_evo_best = []
 
+    keep_best_result_azure = []
+
     # execution
     for epoch in range(epochs):
         if verbose and Me == 0:
             print(f'\n__________epoch n{epoch}_________')
+            best_result = ordre.selection_nbest(population, NbP, scores)[0]
+            keep_best_result_azure.append(ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
+            print('the best ordre epochs has a score of : ', ordre.population_eval([best_result], n_cores, tasks_dict, optimal_time)[0])
         # selection of the bests
         best_ordres = selection_nbest_mpi(population, n_selected, scores, verbose=verbose)
 
@@ -270,6 +275,8 @@ def main_genetics(path_graph, n_population, n_cores, n_selected, n_mutated, n_cr
         print('\n' + bar + '\n____________RESULTS__________' + bar + '\n')
         print('the best ordre has a score of : ', ordre.population_eval([best_result], n_cores,tasks_dict, optimal_time)[0])
         print(bar + '\n\n')
+        print(keep_best_result_azure)
+
 
         # time_analytics score printing
         if time_analytics:
@@ -312,8 +319,8 @@ n_mutated = 4
 n_crossed = 3
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
 mutations_prob = 0.6
-nb_mut_max = 100000
-crossover_bloc_size = (10000, 100000)  # must be inferior to n_tasks
+nb_mut_max = 10
+crossover_bloc_size = (2, 8)  # must be inferior to n_tasks
 # execution
 epochs = 20
 # logs during the execution?
