@@ -319,10 +319,10 @@ n_mutated = 4
 n_crossed = 3
 # genetics --> adapt the blocs size and the mutation numbers to the number of tasks
 mutations_prob = 0.6
-nb_mut_max = 10
-crossover_bloc_size = (2, 8)  # must be inferior to n_tasks
+nb_mut_max = 100000
+crossover_bloc_size = (10000, 100000)  # must be inferior to n_tasks
 # execution
-epochs = 10
+epochs = 20
 # logs during the execution?
 verbose = True
 time_analytics = True
